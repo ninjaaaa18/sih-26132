@@ -5,7 +5,10 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.database.session import get_db
+from app.models.entities import Market
 from app.schemas.master_data import CropRead, FarmerProfileRead, LocationRead, MarketPriceRead, MarketRead
+from app.schemas.price_trends import PriceTrendRead
+from app.services.price_trends import get_price_trends
 from app.services.master_data import get_farmer_profile, list_crops, list_locations, list_market_prices, list_markets
 
 router = APIRouter(prefix="/api/v1", tags=["master-data"])
@@ -64,4 +67,30 @@ def read_market_prices(
             source=price.source,
         )
         for price, market in list_market_prices(db, crop_id, market_id, price_date)
+    ]
+
+
+@router.get("/price-trends", response_model=list[PriceTrendRead])
+def read_price_trends(crop_id: UUID, market_id: UUID | None = None, db: Session = Depends(get_db)) -> list[PriceTrendRead]:
+    crop, trends = get_price_trends(db, crop_id, market_id)
+    if crop is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Crop not found")
+    if market_id is not None and not trends:
+        if db.get(Market, market_id) is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Market not found")
+    return [
+        PriceTrendRead(
+            crop_id=trend.crop.id,
+            crop_name=trend.crop.name,
+            market_id=trend.market.id,
+            market_name=trend.market.name,
+            oldest_price=trend.oldest_price,
+            oldest_date=trend.oldest_date,
+            latest_price=trend.latest_price,
+            latest_date=trend.latest_date,
+            absolute_change=trend.absolute_change,
+            percentage_change=trend.percentage_change,
+            trend_direction=trend.trend_direction,
+        )
+        for trend in trends
     ]
