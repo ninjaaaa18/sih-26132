@@ -31,14 +31,8 @@ class NetRealizationCalculation:
 
 
 def estimate_transport_cost(produce_lot: ProduceLot, market: Market) -> Decimal:
-    """Return a demo estimate; no GPS distance or live logistics pricing is used."""
-    lot_location = produce_lot.location
-    market_location = market.location
-    if lot_location.state == market_location.state:
-        amount = Decimal("250.00") if lot_location.district == market_location.district else Decimal("550.00")
-    else:
-        amount = Decimal("850.00")
-    return amount
+    """Return the flat controlled-demo estimate; no live logistics pricing is used."""
+    return Decimal("250.00")
 
 
 def convert_quantity_to_price_unit(quantity: Decimal, quantity_unit: str, price_unit: str) -> Decimal:

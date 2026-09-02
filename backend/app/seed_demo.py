@@ -77,7 +77,7 @@ def find_or_create_price(db, market: Market, crop: Crop, price_date: date, price
             market_id=market.id,
             crop_id=crop.id,
             price_per_unit=price,
-            unit=crop.unit_default,
+            unit="quintal",
             price_date=price_date,
             min_price=price - Decimal("100"),
             max_price=price + Decimal("100"),
@@ -85,6 +85,13 @@ def find_or_create_price(db, market: Market, crop: Crop, price_date: date, price
             source="SIH 26132 controlled demo data",
         )
         db.add(market_price)
+    else:
+        market_price.price_per_unit = price
+        market_price.unit = "quintal"
+        market_price.min_price = price - Decimal("100")
+        market_price.max_price = price + Decimal("100")
+        market_price.avg_price = price
+        market_price.source = "SIH 26132 controlled demo data"
     return market_price
 
 
