@@ -51,3 +51,26 @@ class FarmerProfileRead(BaseModel):
     income_bucket: Optional[str]
     created_at: datetime
     updated_at: datetime
+
+
+class MarketRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    name: str
+    location_id: UUID
+    district: str
+    state: str
+    market_type: Optional[str]
+    is_active: bool
+
+
+class MarketPriceRead(BaseModel):
+    id: UUID
+    crop_id: UUID
+    market_id: UUID
+    price: Decimal
+    price_unit: str
+    date: date
+    market_name: str
+    source: Optional[str]
