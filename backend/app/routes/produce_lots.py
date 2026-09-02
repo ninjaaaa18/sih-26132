@@ -5,10 +5,45 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.database.session import get_db
+from app.models.entities import Market
+from app.schemas.net_realization import NetRealizationComparisonRead, NetRealizationRead
 from app.schemas.produce_lot import ProduceLotCreate, ProduceLotRead
+from app.services.net_realization import calculate_lot_net_realizations
 from app.services.produce_lots import create_produce_lot, get_produce_lot
 
 router = APIRouter(prefix="/api/v1/produce-lots", tags=["produce-lots"])
+
+
+def _net_realization_response(calculation, produce_lot) -> NetRealizationRead:
+    return NetRealizationRead(
+        market_id=calculation.market.id,
+        market_name=calculation.market.name,
+        crop_id=calculation.market_price.crop_id,
+        crop_name=calculation.market_price.crop.name,
+        quantity=produce_lot.quantity,
+        quantity_unit=produce_lot.unit,
+        quantity_in_price_unit=calculation.quantity_in_price_unit,
+        price=calculation.market_price.price_per_unit,
+        price_unit=calculation.price_unit,
+        price_date=calculation.market_price.price_date,
+        gross_value=calculation.gross_value,
+        estimated_transport_cost=calculation.estimated_transport_cost,
+        net_realization=calculation.net_realization,
+    )
+
+
+@router.get("/{lot_id}/net-realization", response_model=NetRealizationComparisonRead)
+def read_net_realization(lot_id: UUID, market_id: UUID | None = None, db: Session = Depends(get_db)) -> NetRealizationComparisonRead:
+    produce_lot, calculations = calculate_lot_net_realizations(db, lot_id, market_id)
+    if produce_lot is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Produce lot not found")
+    if market_id is not None and db.get(Market, market_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Market not found")
+    if not calculations:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No market price available for this lot")
+    results = [_net_realization_response(calculation, produce_lot) for calculation in calculations]
+    highest = max(results, key=lambda result: result.net_realization)
+    return NetRealizationComparisonRead(results=results, highest_estimated_net_realization=highest)
 
 
 @router.post("", response_model=ProduceLotRead, status_code=status.HTTP_201_CREATED)
