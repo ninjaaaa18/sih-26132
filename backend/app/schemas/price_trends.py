@@ -11,6 +11,7 @@ class PriceTrendRead(BaseModel):
     crop_name: str
     market_id: UUID
     market_name: str
+    price_unit: str
     oldest_price: Optional[Decimal]
     oldest_date: Optional[date]
     latest_price: Optional[Decimal]

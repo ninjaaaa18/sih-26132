@@ -84,6 +84,7 @@ def read_price_trends(crop_id: UUID, market_id: UUID | None = None, db: Session 
             crop_name=trend.crop.name,
             market_id=trend.market.id,
             market_name=trend.market.name,
+            price_unit="quintal",
             oldest_price=trend.oldest_price,
             oldest_date=trend.oldest_date,
             latest_price=trend.latest_price,

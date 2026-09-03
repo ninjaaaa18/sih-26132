@@ -45,3 +45,15 @@ class ProduceLotRead(BaseModel):
 
 class ProduceLotListRead(BaseModel):
     lots: list[ProduceLotRead]
+
+
+class LotOrderInfoRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    order_id: UUID
+    buyer_company_name: str
+    agreed_price: Decimal
+    agreed_quantity: Decimal
+    unit: str
+    order_status: str
+    order_date: datetime

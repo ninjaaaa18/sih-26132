@@ -67,6 +67,7 @@ DEMO_BUYERS = (
         "verification_status": VerificationStatus.VERIFIED,
         "demands": (
             {"crop_name": "Tomato", "quantity": Decimal("1000"), "unit": "kg", "preferred_price": Decimal("2600"), "location_index": 3},
+            {"crop_name": "Onion", "quantity": Decimal("1000"), "unit": "kg", "preferred_price": Decimal("2300"), "location_index": 3},
         ),
     },
     {
@@ -79,7 +80,9 @@ DEMO_BUYERS = (
         "location_index": 1,
         "verification_status": VerificationStatus.VERIFIED,
         "demands": (
-            {"crop_name": "Tomato", "quantity": Decimal("500"), "unit": "kg", "preferred_price": Decimal("2550"), "location_index": 1},
+            {"crop_name": "Tomato", "quantity": Decimal("1000"), "unit": "kg", "preferred_price": Decimal("2550"), "location_index": 1},
+            {"crop_name": "Potato", "quantity": Decimal("1000"), "unit": "kg", "preferred_price": Decimal("1900"), "location_index": 1},
+            {"crop_name": "Maize", "quantity": Decimal("1000"), "unit": "kg", "preferred_price": Decimal("2250"), "location_index": 1},
         ),
     },
     {
@@ -92,7 +95,9 @@ DEMO_BUYERS = (
         "location_index": 0,
         "verification_status": VerificationStatus.PENDING,
         "demands": (
-            {"crop_name": "Onion", "quantity": Decimal("800"), "unit": "kg", "preferred_price": Decimal("2300"), "location_index": 0},
+            {"crop_name": "Onion", "quantity": Decimal("1000"), "unit": "kg", "preferred_price": Decimal("2350"), "location_index": 0},
+            {"crop_name": "Potato", "quantity": Decimal("1000"), "unit": "kg", "preferred_price": Decimal("1850"), "location_index": 0},
+            {"crop_name": "Maize", "quantity": Decimal("1000"), "unit": "kg", "preferred_price": Decimal("2200"), "location_index": 0},
         ),
     },
 )

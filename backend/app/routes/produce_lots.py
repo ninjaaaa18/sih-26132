@@ -8,13 +8,14 @@ from app.database.session import get_db
 from app.models.entities import Market
 from app.schemas.net_realization import NetRealizationComparisonRead, NetRealizationRead
 from app.schemas.recommendation import RecommendationRead, RecommendedMarketRead
-from app.schemas.produce_lot import ProduceLotCreate, ProduceLotListRead, ProduceLotRead
+from app.schemas.produce_lot import ProduceLotCreate, ProduceLotListRead, ProduceLotRead, LotOrderInfoRead
 from app.services.net_realization import calculate_lot_net_realizations
 from app.services.recommendations import get_recommendation
 from app.services.produce_lots import (
     SellProduceLotError,
     create_produce_lot,
     get_farmer_produce_lots,
+    get_lot_order_info,
     get_produce_lot,
     sell_produce_lot,
 )
@@ -105,6 +106,17 @@ def read_lot(lot_id: UUID, db: Session = Depends(get_db)) -> ProduceLotRead:
     if produce_lot is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Produce lot not found")
     return produce_lot
+
+
+@router.get("/{lot_id}/order-info", response_model=LotOrderInfoRead)
+def read_lot_order_info(lot_id: UUID, db: Session = Depends(get_db)) -> LotOrderInfoRead:
+    produce_lot = get_produce_lot(db, lot_id)
+    if produce_lot is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Produce lot not found")
+    info = get_lot_order_info(db, lot_id)
+    if info is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No order found for this lot")
+    return LotOrderInfoRead(**info)
 
 
 @router.post("/{lot_id}/sell", response_model=ProduceLotRead)
