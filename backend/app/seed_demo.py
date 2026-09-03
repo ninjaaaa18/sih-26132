@@ -17,10 +17,10 @@ CROPS = (
 )
 
 LOCATIONS = (
-    {"state": "Maharashtra", "district": "Nashik", "tehsil": "Niphad", "village": "Lasalgaon", "pincode": "422306"},
-    {"state": "Maharashtra", "district": "Pune", "tehsil": "Junnar", "village": "Ale", "pincode": "412411"},
-    {"state": "Maharashtra", "district": "Ahmednagar", "tehsil": "Rahata", "village": "Shirdi", "pincode": "423109"},
-    {"state": "Maharashtra", "district": "Thane", "tehsil": "Vashi", "village": "Vashi", "pincode": "400703"},
+    {"state": "Maharashtra", "district": "Nashik", "tehsil": "Niphad", "village": "Lasalgaon", "pincode": "422306", "latitude": Decimal("20.146"), "longitude": Decimal("74.238")},
+    {"state": "Maharashtra", "district": "Pune", "tehsil": "Junnar", "village": "Ale", "pincode": "412411", "latitude": Decimal("19.143"), "longitude": Decimal("73.943")},
+    {"state": "Maharashtra", "district": "Ahmednagar", "tehsil": "Rahata", "village": "Shirdi", "pincode": "423109", "latitude": Decimal("19.766"), "longitude": Decimal("74.477")},
+    {"state": "Maharashtra", "district": "Thane", "tehsil": "Vashi", "village": "Vashi", "pincode": "400703", "latitude": Decimal("19.077"), "longitude": Decimal("72.998")},
 )
 
 MARKETS = (
@@ -53,6 +53,9 @@ def find_or_create_location(db, data: dict) -> Location:
     if location is None:
         location = Location(**data)
         db.add(location)
+    else:
+        location.latitude = data["latitude"]
+        location.longitude = data["longitude"]
     return location
 
 

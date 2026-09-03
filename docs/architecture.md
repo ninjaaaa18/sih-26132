@@ -398,6 +398,13 @@ Required vs optional:
 - Required: state, district, created_at, updated_at
 - Optional: tehsil, village, pincode, latitude, longitude
 
+Transport-cost MVP assumptions:
+- Distance uses straight-line Haversine distance between farmer and market locations.
+- The distance is multiplied by a controlled road adjustment factor of 1.20.
+- A 1,000 kg vehicle capacity determines the number of trips.
+- Each trip has a controlled fixed cost of ₹300, plus ₹18 per effective kilometre scaled by vehicle load utilization.
+- These are controlled demo assumptions, not live freight quotes.
+
 ---
 
 ### 2.14 FPO (Farmer Producer Organization)

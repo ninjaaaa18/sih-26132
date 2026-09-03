@@ -1,5 +1,6 @@
 from dataclasses import dataclass
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import Decimal, ROUND_CEILING, ROUND_HALF_UP
+from math import asin, cos, radians, sin, sqrt
 from uuid import UUID
 
 from sqlalchemy import select
@@ -8,6 +9,11 @@ from sqlalchemy.orm import Session
 from app.models.entities import Market, MarketPrice, ProduceLot
 
 CENT = Decimal("0.01")
+ROAD_DISTANCE_FACTOR = Decimal("1.20")
+VEHICLE_CAPACITY_KG = Decimal("1000")
+FIXED_COST_PER_TRIP = Decimal("300")
+VARIABLE_RATE_PER_KM = Decimal("18")
+EARTH_RADIUS_KM = 6371.0088
 MASS_UNITS_IN_KG = {
     "kg": Decimal("1"),
     "kilogram": Decimal("1"),
@@ -30,9 +36,44 @@ class NetRealizationCalculation:
     net_realization: Decimal
 
 
+def haversine_distance_km(latitude1: Decimal, longitude1: Decimal, latitude2: Decimal, longitude2: Decimal) -> Decimal:
+    coordinates = (latitude1, longitude1, latitude2, longitude2)
+    if not all(Decimal(str(coordinate)).is_finite() for coordinate in coordinates):
+        raise ValueError("Location coordinates must be finite")
+    if not -90 <= latitude1 <= 90 or not -90 <= latitude2 <= 90:
+        raise ValueError("Latitude must be between -90 and 90")
+    if not -180 <= longitude1 <= 180 or not -180 <= longitude2 <= 180:
+        raise ValueError("Longitude must be between -180 and 180")
+    latitude_delta = radians(float(latitude2 - latitude1))
+    longitude_delta = radians(float(longitude2 - longitude1))
+    latitude1_radians = radians(float(latitude1))
+    latitude2_radians = radians(float(latitude2))
+    haversine = sin(latitude_delta / 2) ** 2 + cos(latitude1_radians) * cos(latitude2_radians) * sin(longitude_delta / 2) ** 2
+    return Decimal(str(2 * EARTH_RADIUS_KM * asin(sqrt(haversine)))).quantize(CENT, rounding=ROUND_HALF_UP)
+
+
+def normalize_quantity_to_kg(quantity: Decimal, quantity_unit: str) -> Decimal:
+    quantity_factor = MASS_UNITS_IN_KG.get(quantity_unit.strip().lower())
+    if quantity_factor is None:
+        raise ValueError(f"Unsupported mass unit: {quantity_unit}")
+    return (quantity * quantity_factor).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP)
+
+
 def estimate_transport_cost(produce_lot: ProduceLot, market: Market) -> Decimal:
-    """Return the flat controlled-demo estimate; no live logistics pricing is used."""
-    return Decimal("250.00")
+    """Estimate deterministic demo transport cost from locations and load utilization."""
+    farmer_location = produce_lot.location
+    market_location = market.location
+    if farmer_location is None or market_location is None:
+        raise ValueError("Transport cost requires farmer and market locations")
+    coordinates = (farmer_location.latitude, farmer_location.longitude, market_location.latitude, market_location.longitude)
+    if any(coordinate is None for coordinate in coordinates):
+        raise ValueError("Transport cost requires latitude and longitude for both locations")
+    distance_km = haversine_distance_km(*coordinates)
+    effective_distance_km = (distance_km * ROAD_DISTANCE_FACTOR).quantize(CENT, rounding=ROUND_HALF_UP)
+    quantity_kg = normalize_quantity_to_kg(produce_lot.quantity, produce_lot.unit)
+    trips = int((quantity_kg / VEHICLE_CAPACITY_KG).to_integral_value(rounding=ROUND_CEILING))
+    variable_cost = effective_distance_km * VARIABLE_RATE_PER_KM * quantity_kg / VEHICLE_CAPACITY_KG
+    return (FIXED_COST_PER_TRIP * trips + variable_cost).quantize(CENT, rounding=ROUND_HALF_UP)
 
 
 def convert_quantity_to_price_unit(quantity: Decimal, quantity_unit: str, price_unit: str) -> Decimal:
