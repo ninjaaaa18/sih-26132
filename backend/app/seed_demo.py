@@ -37,12 +37,20 @@ LOCATIONS = (
     {"state": "Maharashtra", "district": "Pune", "tehsil": "Junnar", "village": "Ale", "pincode": "412411", "latitude": Decimal("19.143"), "longitude": Decimal("73.943")},
     {"state": "Maharashtra", "district": "Ahmednagar", "tehsil": "Rahata", "village": "Shirdi", "pincode": "423109", "latitude": Decimal("19.766"), "longitude": Decimal("74.477")},
     {"state": "Maharashtra", "district": "Thane", "tehsil": "Vashi", "village": "Vashi", "pincode": "400703", "latitude": Decimal("19.077"), "longitude": Decimal("72.998")},
+    {"state": "Karnataka", "district": "Bengaluru Rural", "tehsil": "Devanahalli", "village": "Devanahalli", "pincode": "562110", "latitude": Decimal("13.247"), "longitude": Decimal("77.705")},
+    {"state": "Karnataka", "district": "Belagavi", "tehsil": "Belagavi", "village": "Macleshwar", "pincode": "590008", "latitude": Decimal("15.855"), "longitude": Decimal("74.505")},
+    {"state": "Karnataka", "district": "Mysuru", "tehsil": "Mysuru", "village": "Saragur", "pincode": "571121", "latitude": Decimal("12.053"), "longitude": Decimal("76.905")},
+    {"state": "Karnataka", "district": "Dharwad", "tehsil": "Hubballi", "village": "Hubballi", "pincode": "580020", "latitude": Decimal("15.365"), "longitude": Decimal("75.124")},
 )
 
 MARKETS = (
     {"name": "APMC Lasalgaon", "location_index": 0, "market_type": MarketType.MANDI},
     {"name": "APMC Pune", "location_index": 1, "market_type": MarketType.MANDI},
     {"name": "APMC Vashi", "location_index": 3, "market_type": MarketType.MANDI},
+    {"name": "APMC Yeshwanthpur", "location_index": 4, "market_type": MarketType.MANDI},
+    {"name": "APMC Belagavi", "location_index": 5, "market_type": MarketType.MANDI},
+    {"name": "APMC Mysuru", "location_index": 6, "market_type": MarketType.MANDI},
+    {"name": "APMC Hubballi", "location_index": 7, "market_type": MarketType.MANDI},
 )
 
 DEMO_PRICES = {"Tomato": Decimal("2400"), "Onion": Decimal("2200"), "Potato": Decimal("1800"), "Maize": Decimal("2100")}
