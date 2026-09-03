@@ -41,3 +41,7 @@ class ProduceLotRead(BaseModel):
     notes: Optional[str]
     created_at: datetime
     updated_at: datetime
+
+
+class ProduceLotListRead(BaseModel):
+    lots: list[ProduceLotRead]

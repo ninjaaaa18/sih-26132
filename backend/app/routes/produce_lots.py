@@ -8,10 +8,16 @@ from app.database.session import get_db
 from app.models.entities import Market
 from app.schemas.net_realization import NetRealizationComparisonRead, NetRealizationRead
 from app.schemas.recommendation import RecommendationRead, RecommendedMarketRead
-from app.schemas.produce_lot import ProduceLotCreate, ProduceLotRead
+from app.schemas.produce_lot import ProduceLotCreate, ProduceLotListRead, ProduceLotRead
 from app.services.net_realization import calculate_lot_net_realizations
 from app.services.recommendations import get_recommendation
-from app.services.produce_lots import SellProduceLotError, create_produce_lot, get_produce_lot, sell_produce_lot
+from app.services.produce_lots import (
+    SellProduceLotError,
+    create_produce_lot,
+    get_farmer_produce_lots,
+    get_produce_lot,
+    sell_produce_lot,
+)
 
 router = APIRouter(prefix="/api/v1/produce-lots", tags=["produce-lots"])
 
@@ -83,6 +89,14 @@ def create_lot(lot_data: ProduceLotCreate, db: Session = Depends(get_db)) -> Pro
             status_code=status.HTTP_409_CONFLICT,
             detail="Produce lot conflicts with an existing record or references missing data",
         ) from error
+
+
+@router.get("", response_model=ProduceLotListRead)
+def list_lots(farmer_profile_id: UUID, db: Session = Depends(get_db)) -> ProduceLotListRead:
+    farmer, lots = get_farmer_produce_lots(db, farmer_profile_id)
+    if farmer is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Farmer profile not found")
+    return ProduceLotListRead(lots=lots)
 
 
 @router.get("/{lot_id}", response_model=ProduceLotRead)

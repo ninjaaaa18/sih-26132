@@ -1,9 +1,10 @@
 from uuid import UUID
 
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.models.entities import LotStatus, ProduceLot
+from app.models.entities import FarmerProfile, LotStatus, ProduceLot
 from app.schemas.produce_lot import ProduceLotCreate
 
 SELLABLE_LOT_STATUSES = {LotStatus.DRAFT, LotStatus.ACTIVE, LotStatus.MATCHED}
@@ -29,6 +30,18 @@ def create_produce_lot(db: Session, lot_data: ProduceLotCreate) -> ProduceLot:
 
 def get_produce_lot(db: Session, lot_id: UUID) -> ProduceLot | None:
     return db.get(ProduceLot, lot_id)
+
+
+def get_farmer_produce_lots(db: Session, farmer_profile_id: UUID) -> tuple[FarmerProfile | None, list[ProduceLot]]:
+    farmer = db.get(FarmerProfile, farmer_profile_id)
+    if farmer is None:
+        return None, []
+    lots = db.scalars(
+        select(ProduceLot)
+        .where(ProduceLot.farmer_profile_id == farmer_profile_id)
+        .order_by(ProduceLot.created_at.desc())
+    ).all()
+    return farmer, list(lots)
 
 
 def sell_produce_lot(db: Session, lot_id: UUID) -> ProduceLot:

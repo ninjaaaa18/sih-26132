@@ -7,9 +7,9 @@ from uuid import uuid4
 
 from fastapi import HTTPException
 
-from app.models.entities import BuyerType, DemandStatus, LotStatus, OfferStatus, OrderStatus, VerificationStatus
+from app.models.entities import BuyerType, DemandStatus, FarmerProfile, LotStatus, OfferStatus, OrderStatus, VerificationStatus
 from app.routes.buyer_matching import accept_buyer_offer, create_buyer_offer, read_buyer_matches
-from app.routes.produce_lots import sell_lot
+from app.routes.produce_lots import list_lots, sell_lot
 from app.services.buyer_matching import (
     build_buyer_match,
     calculate_match_score,
@@ -18,7 +18,7 @@ from app.services.buyer_matching import (
     sort_matches,
 )
 from app.services.buyer_offers import OfferServiceError, accept_offer, create_demo_offer
-from app.services.produce_lots import SellProduceLotError, sell_produce_lot
+from app.services.produce_lots import SellProduceLotError, get_farmer_produce_lots, sell_produce_lot
 
 
 def location(district: str, state: str = "Maharashtra") -> SimpleNamespace:
@@ -313,6 +313,86 @@ class SellProduceLotTests(unittest.TestCase):
             with self.assertRaises(HTTPException) as context:
                 sell_lot(uuid4(), SimpleNamespace())
         self.assertEqual(context.exception.status_code, 409)
+
+
+class ListProduceLotTests(unittest.TestCase):
+    def test_farmer_lots_returned_newest_first(self):
+        db = MagicMock()
+        farmer = SimpleNamespace(id=uuid4())
+        older = SimpleNamespace(
+            id=uuid4(),
+            farmer_profile_id=farmer.id,
+            created_at=datetime.now(timezone.utc) - timedelta(days=1),
+        )
+        newer = SimpleNamespace(
+            id=uuid4(),
+            farmer_profile_id=farmer.id,
+            created_at=datetime.now(timezone.utc),
+        )
+        db.get.return_value = farmer
+        db.scalars.return_value.all.return_value = [newer, older]
+
+        result_farmer, lots = get_farmer_produce_lots(db, farmer.id)
+
+        self.assertIs(result_farmer, farmer)
+        self.assertEqual(lots, [newer, older])
+        db.get.assert_called_once_with(FarmerProfile, farmer.id)
+
+    def test_unknown_farmer_returns_empty(self):
+        db = MagicMock()
+        db.get.return_value = None
+
+        result_farmer, lots = get_farmer_produce_lots(db, uuid4())
+
+        self.assertIsNone(result_farmer)
+        self.assertEqual(lots, [])
+
+    def test_farmer_with_no_lots_returns_empty(self):
+        db = MagicMock()
+        farmer = SimpleNamespace(id=uuid4())
+        db.get.return_value = farmer
+        db.scalars.return_value.all.return_value = []
+
+        result_farmer, lots = get_farmer_produce_lots(db, farmer.id)
+
+        self.assertIs(result_farmer, farmer)
+        self.assertEqual(lots, [])
+
+    def test_route_unknown_farmer_returns_404(self):
+        with patch("app.routes.produce_lots.get_farmer_produce_lots", return_value=(None, [])):
+            with self.assertRaises(HTTPException) as context:
+                list_lots(uuid4(), SimpleNamespace())
+        self.assertEqual(context.exception.status_code, 404)
+
+    def test_route_returns_only_that_farmers_lots(self):
+        db = MagicMock()
+        farmer = SimpleNamespace(id=uuid4())
+        lot = SimpleNamespace(
+            id=uuid4(),
+            farmer_profile_id=farmer.id,
+            crop_id=uuid4(),
+            lot_number="LOT-1",
+            quantity=Decimal("500"),
+            unit="kg",
+            quality_grade=None,
+            harvest_date=date.today(),
+            expected_delivery_date=None,
+            lot_status=LotStatus.ACTIVE,
+            location_id=uuid4(),
+            price_expectation=Decimal("2500"),
+            notes=None,
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc),
+        )
+        with patch(
+            "app.routes.produce_lots.get_farmer_produce_lots",
+            return_value=(farmer, [lot]),
+        ) as mock_svc:
+            result = list_lots(farmer.id, db)
+
+        self.assertEqual(len(result.lots), 1)
+        self.assertEqual(result.lots[0].farmer_profile_id, farmer.id)
+        mock_svc.assert_called_once_with(db, farmer.id)
 
 
 if __name__ == "__main__":
