@@ -9,6 +9,7 @@ from fastapi import HTTPException
 
 from app.models.entities import BuyerType, DemandStatus, LotStatus, OfferStatus, OrderStatus, VerificationStatus
 from app.routes.buyer_matching import accept_buyer_offer, create_buyer_offer, read_buyer_matches
+from app.routes.produce_lots import sell_lot
 from app.services.buyer_matching import (
     build_buyer_match,
     calculate_match_score,
@@ -17,6 +18,7 @@ from app.services.buyer_matching import (
     sort_matches,
 )
 from app.services.buyer_offers import OfferServiceError, accept_offer, create_demo_offer
+from app.services.produce_lots import SellProduceLotError, sell_produce_lot
 
 
 def location(district: str, state: str = "Maharashtra") -> SimpleNamespace:
@@ -209,7 +211,7 @@ class BuyerOfferServiceTests(unittest.TestCase):
         accepted_offer, order = accept_offer(db, offer.id)
 
         self.assertEqual(accepted_offer.offer_status, OfferStatus.ACCEPTED)
-        self.assertEqual(produce.lot_status, LotStatus.ACCEPTED)
+        self.assertEqual(produce.lot_status, LotStatus.SOLD)
         self.assertEqual(order.order_status, OrderStatus.CREATED)
         db.flush.assert_called_once()
         db.commit.assert_called_once()
@@ -260,6 +262,56 @@ class BuyerMatchingRouteTests(unittest.TestCase):
         with patch("app.routes.buyer_matching.accept_offer", side_effect=OfferServiceError("An order already exists for this offer")):
             with self.assertRaises(HTTPException) as context:
                 accept_buyer_offer(uuid4(), SimpleNamespace())
+        self.assertEqual(context.exception.status_code, 409)
+
+
+class SellProduceLotTests(unittest.TestCase):
+    def test_sell_eligible_lot_becomes_available(self):
+        db = MagicMock()
+        produce_lot = SimpleNamespace(id=uuid4(), lot_status=LotStatus.DRAFT)
+        db.get.return_value = produce_lot
+
+        result = sell_produce_lot(db, produce_lot.id)
+
+        self.assertEqual(result.lot_status, LotStatus.ACTIVE)
+        db.commit.assert_called_once()
+
+    def test_sell_missing_lot_raises_not_found(self):
+        db = MagicMock()
+        db.get.return_value = None
+        with self.assertRaisesRegex(SellProduceLotError, "not found"):
+            sell_produce_lot(db, uuid4())
+        db.commit.assert_not_called()
+
+    def test_sell_ineligible_lot_is_rejected(self):
+        db = MagicMock()
+        produce_lot = SimpleNamespace(id=uuid4(), lot_status=LotStatus.SOLD)
+        db.get.return_value = produce_lot
+        with self.assertRaisesRegex(SellProduceLotError, "cannot be put up for sale"):
+            sell_produce_lot(db, produce_lot.id)
+        db.commit.assert_not_called()
+
+    def test_sell_rolls_back_on_integrity_error(self):
+        from sqlalchemy.exc import IntegrityError
+
+        db = MagicMock()
+        produce_lot = SimpleNamespace(id=uuid4(), lot_status=LotStatus.ACTIVE)
+        db.get.return_value = produce_lot
+        db.commit.side_effect = IntegrityError("insert", {}, Exception("duplicate"))
+        with self.assertRaises(IntegrityError):
+            sell_produce_lot(db, produce_lot.id)
+        db.rollback.assert_called_once()
+
+    def test_sell_route_maps_missing_lot_to_404(self):
+        with patch("app.routes.produce_lots.sell_produce_lot", side_effect=SellProduceLotError("Produce lot not found")):
+            with self.assertRaises(HTTPException) as context:
+                sell_lot(uuid4(), SimpleNamespace())
+        self.assertEqual(context.exception.status_code, 404)
+
+    def test_sell_route_maps_ineligible_lot_to_conflict(self):
+        with patch("app.routes.produce_lots.sell_produce_lot", side_effect=SellProduceLotError("cannot be put up for sale")):
+            with self.assertRaises(HTTPException) as context:
+                sell_lot(uuid4(), SimpleNamespace())
         self.assertEqual(context.exception.status_code, 409)
 
 

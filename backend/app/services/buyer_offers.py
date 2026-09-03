@@ -188,7 +188,7 @@ def accept_offer(db: Session, offer_id: UUID) -> tuple[BuyerOffer, Order]:
         order_date=now,
     )
     db.add(order)
-    produce_lot.lot_status = LotStatus.ACCEPTED
+    produce_lot.lot_status = LotStatus.SOLD
 
     try:
         db.commit()

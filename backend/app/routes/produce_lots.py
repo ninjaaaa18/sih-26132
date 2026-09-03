@@ -11,7 +11,7 @@ from app.schemas.recommendation import RecommendationRead, RecommendedMarketRead
 from app.schemas.produce_lot import ProduceLotCreate, ProduceLotRead
 from app.services.net_realization import calculate_lot_net_realizations
 from app.services.recommendations import get_recommendation
-from app.services.produce_lots import create_produce_lot, get_produce_lot
+from app.services.produce_lots import SellProduceLotError, create_produce_lot, get_produce_lot, sell_produce_lot
 
 router = APIRouter(prefix="/api/v1/produce-lots", tags=["produce-lots"])
 
@@ -91,3 +91,17 @@ def read_lot(lot_id: UUID, db: Session = Depends(get_db)) -> ProduceLotRead:
     if produce_lot is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Produce lot not found")
     return produce_lot
+
+
+@router.post("/{lot_id}/sell", response_model=ProduceLotRead)
+def sell_lot(lot_id: UUID, db: Session = Depends(get_db)) -> ProduceLotRead:
+    try:
+        return sell_produce_lot(db, lot_id)
+    except SellProduceLotError as error:
+        status_code = status.HTTP_404_NOT_FOUND if "not found" in error.message.lower() else status.HTTP_409_CONFLICT
+        raise HTTPException(status_code=status_code, detail=error.message) from error
+    except IntegrityError as error:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Could not put produce lot up for sale because of a database conflict",
+        ) from error
