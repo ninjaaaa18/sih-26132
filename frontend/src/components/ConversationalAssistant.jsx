@@ -1,8 +1,8 @@
-import { LANGS } from '../translations'
+import { LANGS, localizedUnit } from '../translations'
 import { useConversationalAssistant } from '../hooks/useConversationalAssistant'
 
-export default function ConversationalAssistant({ crops, locations, language, t, onCreated, onSeeRecommendation }) {
-  const assistant = useConversationalAssistant({ crops, locations, language, t, onCreateLot: onCreated, onSeeRecommendation })
+export default function ConversationalAssistant({ crops, locations, language, t, onCreated, onSeeRecommendation, onViewPriceHistory }) {
+  const assistant = useConversationalAssistant({ crops, locations, language, t, onCreateLot: onCreated, onSeeRecommendation, onViewPriceHistory })
   const languageLabel = LANGS.find((lang) => lang.code === language)?.label || language
 
   if (!assistant.open) {
@@ -39,7 +39,7 @@ export default function ConversationalAssistant({ crops, locations, language, t,
         <div className="ai-confirm">
           <div className="ai-summary">
             <div><span>{t('form.crop')}</span><strong>{assistant.cropName(assistant.slots.crop_id)}</strong></div>
-            <div><span>{t('form.quantity')}</span><strong>{assistant.slots.quantity} {assistant.slots.unit}</strong></div>
+            <div><span>{t('form.quantity')}</span><strong>{assistant.slots.quantity} {localizedUnit(assistant.slots.unit, language)}</strong></div>
             <div><span>{t('form.pickup')}</span><strong>{assistant.locationName(assistant.slots.location_id)}</strong></div>
             <div><span>{t('form.harvest.date')}</span><strong>{assistant.slots.harvest_date}</strong></div>
           </div>

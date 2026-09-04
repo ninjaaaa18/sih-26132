@@ -11,6 +11,7 @@ export const VOICE_LANGS = { en: 'en-IN', kn: 'kn-IN', mr: 'mr-IN', hi: 'hi-IN',
 
 const STRINGS = {
   en: {
+    'a11y.home': 'Kheti Setu home', 'a11y.language': 'Language',
     'demo.farmer': 'Demo farmer',
     'farmer.workspace': 'Farmer workspace',
     'loading.profile': 'Loading profile',
@@ -83,7 +84,9 @@ const STRINGS = {
     'action.price.history': 'Price history',
     'action.find.buyers': 'Find Buyers',
     'action.sell': 'Sell / Find Buyers',
+    'action.sell.lot': 'Sell',
     'sell.selling': 'Marking lot for sale & finding buyers...',
+    'sell.error': 'Could not put this lot up for sale.',
     'status.draft': 'Draft',
     'status.available': 'Available',
     'status.matched': 'Matched',
@@ -226,6 +229,7 @@ const STRINGS = {
     'ai.recognition.error': 'Voice recognition failed. Please try again or type your answer.',
   },
   kn: {
+    'a11y.home': 'ಖೇತಿ ಸೇತು ಮುಖಪುಟ', 'a11y.language': 'ಭಾಷೆ',
     'demo.farmer': 'ಪ್ರದರ್ಶನ ರೈತ',
     'farmer.workspace': 'ರೈತ ಕಾರ್ಯಸ್ಥಳ',
     'loading.profile': 'ಪ್ರೊಫೈಲ್ ಲೋಡ್ ಆಗುತ್ತಿದೆ',
@@ -441,6 +445,7 @@ const STRINGS = {
     'ai.recognition.error': 'ಧ್ವನಿ ಗುರುತಿಸುವಿಕೆ ವಿಫಲವಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ ಅಥವಾ ನಿಮ್ಮ ಉತ್ತರವನ್ನು ಟೈಪ್ ಮಾಡಿ.',
   },
   mr: {
+    'a11y.home': 'खेत सेतू मुख्यपृष्ठ', 'a11y.language': 'भाषा',
     'demo.farmer': 'डेमो शेतकरी',
     'farmer.workspace': 'शेतकरी कार्यस्थळ',
     'loading.profile': 'प्रोफाइल लोड होत आहे',
@@ -656,6 +661,7 @@ const STRINGS = {
     'ai.recognition.error': 'व्हॉइस ओळख अयशस्वी. कृपया पुन्हा प्रयत्न करा किंवा तुमचे उत्तर टाइप करा.',
   },
   hi: {
+    'a11y.home': 'खेती सेतु मुखपृष्ठ', 'a11y.language': 'भाषा',
     'demo.farmer': 'डेमो किसान',
     'farmer.workspace': 'किसान कार्यक्षेत्र',
     'loading.profile': 'प्रोफाइल लोड हो रहा है',
@@ -871,6 +877,7 @@ const STRINGS = {
     'ai.recognition.error': 'वॉइस पहचान विफल रही। कृपया पुनः प्रयास करें या अपना उत्तर टाइप करें.',
   },
   ta: {
+    'a11y.home': 'கேதி சேது முகப்பு', 'a11y.language': 'மொழி',
     'demo.farmer': 'டெமோ விவசாயி',
     'farmer.workspace': 'விவசாயி பணியிடம்',
     'loading.profile': 'சுயவிவரம் ஏற்றப்படுகிறது',
@@ -1086,6 +1093,7 @@ const STRINGS = {
     'ai.recognition.error': 'குரல் அங்கீகாரம் தோல்வியடைந்தது. தயவுசெய்து மீண்டும் முயற்சிக்கவும் அல்லது உங்கள் பதிலைத் தட்டச்சு செய்யுங்கள்.',
   },
   te: {
+    'a11y.home': 'ఖేతి సేతు హోమ్', 'a11y.language': 'భాష',
     'demo.farmer': 'డెమో రైతు',
     'farmer.workspace': 'రైతు కార్యస్థలం',
     'loading.profile': 'ప్రొఫైల్ లోడ్ అవుతోంది',
@@ -1302,9 +1310,232 @@ const STRINGS = {
   },
 }
 
+const DISPLAY_VALUES = {
+  crop: {
+    Tomato: { en: 'Tomato', kn: 'ಟೊಮೆಟೊ', mr: 'टोमॅटो', hi: 'टमाटर', ta: 'தக்காளி', te: 'టమాటా' },
+    Onion: { en: 'Onion', kn: 'ಈರುಳ್ಳಿ', mr: 'कांदा', hi: 'प्याज', ta: 'வெங்காயம்', te: 'ఉల్లిపాయ' },
+    Potato: { en: 'Potato', kn: 'ಆಲೂಗಡ್ಡೆ', mr: 'बटाटा', hi: 'आलू', ta: 'உருளைக்கிழங்கு', te: 'బంగాళాదుంప' },
+    Maize: { en: 'Maize', kn: 'ಮೆಕ್ಕೆಜೋಳ', mr: 'मका', hi: 'मक्का', ta: 'சோளம்', te: 'మొక్కజొన్న' },
+  },
+  unit: {
+    kg: { en: 'kg', kn: 'ಕೆಜಿ', mr: 'किलो', hi: 'किलो', ta: 'கிலோ', te: 'కిలో' },
+    quintal: { en: 'quintal', kn: 'ಕ್ವಿಂಟಲ್', mr: 'क्विंटल', hi: 'क्विंटल', ta: 'குவிண்டால்', te: 'క్వింటాల్' },
+    tonne: { en: 'tonne', kn: 'ಟನ್', mr: 'टन', hi: 'टन', ta: 'டன்', te: 'టన్ను' },
+  },
+  status: {
+    draft: { en: 'Draft', kn: 'ಡ್ರಾಫ್ಟ್', mr: 'मसुदा', hi: 'मसौदा', ta: 'வரைவு', te: 'డ్రాఫ్ట్' },
+    active: { en: 'Available', kn: 'ಲಭ್ಯವಿದೆ', mr: 'उपलब्ध', hi: 'उपलब्ध', ta: 'கிடைக்கிறது', te: 'అందుబాటులో ఉంది' },
+    matched: { en: 'Matched', kn: 'ಹೊಂದಿಕೆಯಾಗಿದೆ', mr: 'जुळले', hi: 'मिलान झाले', ta: 'பொருந்தியது', te: 'సరిపోలింది' },
+    offered: { en: 'Offered', kn: 'ಕೊಡುಗೆ ನೀಡಲಾಗಿದೆ', mr: 'ऑफर दिली', hi: 'ऑफर दिया गया', ta: 'சலுகை வழங்கப்பட்டது', te: 'ఆఫర్ ఇచ్చారు' },
+    accepted: { en: 'Accepted', kn: 'ಸ್ವೀಕರಿಸಲಾಗಿದೆ', mr: 'स्वीकारले', hi: 'स्वीकार किया गया', ta: 'ஏற்றுக்கொள்ளப்பட்டது', te: 'ఆమోదించబడింది' },
+    sold: { en: 'Sold', kn: 'ಮಾರಾಟವಾಗಿದೆ', mr: 'विकले', hi: 'बेचा गया', ta: 'விற்கப்பட்டது', te: 'అమ్మబడింది' },
+    rejected: { en: 'Rejected', kn: 'ತಿರಸ್ಕರಿಸಲಾಗಿದೆ', mr: 'नाकारले', hi: 'अस्वीकार किया गया', ta: 'நிராகரிக்கப்பட்டது', te: 'తిరస్కరించబడింది' },
+    cancelled: { en: 'Cancelled', kn: 'ರದ್ದುಗೊಳಿಸಲಾಗಿದೆ', mr: 'रद्द केले', hi: 'रद्द किया गया', ta: 'ரத்து செய்யப்பட்டது', te: 'రద్దు చేయబడింది' },
+  },
+  trend: {
+    RISING: { en: 'Rising', kn: 'ಏರುತ್ತಿದೆ', mr: 'वाढत आहे', hi: 'बढ़ रहा है', ta: 'உயர்கிறது', te: 'పెరుగుతోంది' },
+    FALLING: { en: 'Falling', kn: 'ಇಳಿಯುತ್ತಿದೆ', mr: 'घटत आहे', hi: 'गिर रहा है', ta: 'குறைகிறது', te: 'తగ్గుతోంది' },
+    STABLE: { en: 'Stable', kn: 'ಸ್ಥಿರ', mr: 'स्थिर', hi: 'स्थिर', ta: 'நிலையானது', te: 'స్థిరంగా ఉంది' },
+    INSUFFICIENT_DATA: { en: 'Insufficient data', kn: 'ಸಾಕಷ್ಟು ದತ್ತಾಂಶವಿಲ್ಲ', mr: 'अपुरा डेटा', hi: 'अपर्याप्त डेटा', ta: 'போதுமான தரவு இல்லை', te: 'తగినంత డేటా లేదు' },
+  },
+  buyerType: {
+    trader: { en: 'Trader', kn: 'ವ್ಯಾಪಾರಿ', mr: 'व्यापारी', hi: 'व्यापारी', ta: 'வியாபாரி', te: 'వ్యాపారి' },
+    processor: { en: 'Processor', kn: 'ಸಂಸ್ಕರಣಕಾರ', mr: 'प्रक्रिया करणारा', hi: 'प्रोसेसर', ta: 'செயலாக்குபவர்', te: 'ప్రాసెసర్' },
+    retailer: { en: 'Retailer', kn: 'ಚಿಲ್ಲರೆ ವ್ಯಾಪಾರಿ', mr: 'किरकोळ विक्रेता', hi: 'खुदरा विक्रेता', ta: 'சில்லறை விற்பனையாளர்', te: 'చిల్లర వ్యాపారి' },
+    aggregator: { en: 'Aggregator', kn: 'ಸಂಗ್ರಾಹಕ', mr: 'संकलक', hi: 'संग्राहक', ta: 'திரட்டுபவர்', te: 'సేకరణదారు' },
+    exporter: { en: 'Exporter', kn: 'ರಫ್ತುದಾರ', mr: 'निर्यातदार', hi: 'निर्यातक', ta: 'ஏற்றுமதியாளர்', te: 'ఎగుమతిదారు' },
+    institution: { en: 'Institution', kn: 'ಸಂಸ್ಥೆ', mr: 'संस्था', hi: 'संस्था', ta: 'நிறுவனம்', te: 'సంస్థ' },
+  },
+  verification: {
+    verified: { en: 'Verified', kn: 'ಪರಿಶೀಲಿಸಲಾಗಿದೆ', mr: 'सत्यापित', hi: 'सत्यापित', ta: 'சரிபார்க்கப்பட்டது', te: 'ధృవీకరించబడింది' },
+    pending: { en: 'Pending', kn: 'ಬಾಕಿ', mr: 'प्रलंबित', hi: 'लंबित', ta: 'நிலுவையில்', te: 'పెండింగ్' },
+    rejected: { en: 'Rejected', kn: 'ತಿರಸ್ಕರಿಸಲಾಗಿದೆ', mr: 'नाकारले', hi: 'अस्वीकृत', ta: 'நிராகரிக்கப்பட்டது', te: 'తిరస్కరించబడింది' },
+  },
+  offerStatus: {
+    pending: { en: 'Pending', kn: 'ಬಾಕಿ', mr: 'प्रलंबित', hi: 'लंबित', ta: 'நிலுவையில்', te: 'పెండింగ్' },
+    accepted: { en: 'Accepted', kn: 'ಸ್ವೀಕರಿಸಲಾಗಿದೆ', mr: 'स्वीकारले', hi: 'स्वीकार किया गया', ta: 'ஏற்றுக்கொள்ளப்பட்டது', te: 'ఆమోదించబడింది' },
+    rejected: { en: 'Rejected', kn: 'ತಿರಸ್ಕರಿಸಲಾಗಿದೆ', mr: 'नाकारले', hi: 'अस्वीकृत', ta: 'நிராகரிக்கப்பட்டது', te: 'తిరస్కరించబడింది' },
+    expired: { en: 'Expired', kn: 'ಅವಧಿ ಮುಗಿದಿದೆ', mr: 'कालबाह्य', hi: 'समाप्त', ta: 'காலாவதியானது', te: 'గడువు ముగిసింది' },
+    countered: { en: 'Countered', kn: 'ಪ್ರತಿ-ಕೊಡುಗೆ', mr: 'प्रतिऑफर', hi: 'जवाबी ऑफर', ta: 'எதிர்ச் சலுகை', te: 'ప్రతిస్పందన ఆఫర్' },
+  },
+  orderStatus: {
+    created: { en: 'Created', kn: 'ರಚಿಸಲಾಗಿದೆ', mr: 'तयार केले', hi: 'बनाया गया', ta: 'உருவாக்கப்பட்டது', te: 'సృష్టించబడింది' },
+    confirmed: { en: 'Confirmed', kn: 'ದೃಢೀಕರಿಸಲಾಗಿದೆ', mr: 'निश्चित', hi: 'पुष्टि की गई', ta: 'உறுதிப்படுத்தப்பட்டது', te: 'నిర్ధారించబడింది' },
+    packed: { en: 'Packed', kn: 'ಪ್ಯಾಕ್ ಮಾಡಲಾಗಿದೆ', mr: 'पॅक केले', hi: 'पैक किया गया', ta: 'பொதியிடப்பட்டது', te: 'ప్యాక్ చేయబడింది' },
+    in_transit: { en: 'In transit', kn: 'ಸಾಗಣೆಯಲ್ಲಿ', mr: 'वाहतुकीत', hi: 'रास्ते में', ta: 'போக்குவரத்தில்', te: 'రవాణాలో ఉంది' },
+    delivered: { en: 'Delivered', kn: 'ವಿತರಣೆಯಾಗಿದೆ', mr: 'वितरित', hi: 'पहुंचाया गया', ta: 'வழங்கப்பட்டது', te: 'డెలివరీ చేయబడింది' },
+    cancelled: { en: 'Cancelled', kn: 'ರದ್ದಾಗಿದೆ', mr: 'रद्द', hi: 'रद्द', ta: 'ரத்து', te: 'రద్దు చేయబడింది' },
+  },
+}
+
+const LOCATION_VALUES = {
+  Maharashtra: { en: 'Maharashtra', kn: 'ಮಹಾರಾಷ್ಟ್ರ', mr: 'महाराष्ट्र', hi: 'महाराष्ट्र', ta: 'மகாராஷ்டிரா', te: 'మహారాష్ట్ర' },
+  Karnataka: { en: 'Karnataka', kn: 'ಕರ್ನಾಟಕ', mr: 'कर्नाटक', hi: 'कर्नाटक', ta: 'கர்நாடகம்', te: 'కర్ణాటక' },
+  Nashik: { en: 'Nashik', kn: 'ನಾಶಿಕ್', mr: 'नाशिक', hi: 'नाशिक', ta: 'நாசிக்', te: 'నాసిక్' },
+  Pune: { en: 'Pune', kn: 'ಪುಣೆ', mr: 'पुणे', hi: 'पुणे', ta: 'புனே', te: 'పూణే' },
+  Ahmednagar: { en: 'Ahmednagar', kn: 'ಅಹಮದ್‌ನಗರ', mr: 'अहमदनगर', hi: 'अहमदनगर', ta: 'அகமதுநகர்', te: 'అహ్మద్‌నగర్' },
+  Thane: { en: 'Thane', kn: 'ಥಾಣೆ', mr: 'ठाणे', hi: 'ठाणे', ta: 'தானே', te: 'థానే' },
+  'Bengaluru Rural': { en: 'Bengaluru Rural', kn: 'ಬೆಂಗಳೂರು ಗ್ರಾಮಾಂತರ', mr: 'बेंगळुरू ग्रामीण', hi: 'बेंगलुरु ग्रामीण', ta: 'பெங்களூரு ஊரகம்', te: 'బెంగళూరు గ్రామీణ' },
+  Belagavi: { en: 'Belagavi', kn: 'ಬೆಳಗಾವಿ', mr: 'बेळगावी', hi: 'बेलगावी', ta: 'பெலகாவி', te: 'బెళగావి' },
+  Mysuru: { en: 'Mysuru', kn: 'ಮೈಸೂರು', mr: 'म्हैसूर', hi: 'मैसूर', ta: 'மைசூரு', te: 'మైసూరు' },
+  Dharwad: { en: 'Dharwad', kn: 'ಧಾರವಾಡ', mr: 'धारवाड', hi: 'धारवाड़', ta: 'தார்வாட்', te: 'ధార్వాడ్' },
+  Niphad: { en: 'Niphad', kn: 'ನಿಫಾಡ್', mr: 'निफाड', hi: 'निफाड', ta: 'நிபாட்', te: 'నిఫాడ్' },
+  Lasalgaon: { en: 'Lasalgaon', kn: 'ಲಾಸಲ್ಗಾಂವ್', mr: 'लासलगाव', hi: 'लासलगांव', ta: 'லாசல்கான்', te: 'లాసల్గావ్' },
+  Junnar: { en: 'Junnar', kn: 'ಜುನ್ನರ್', mr: 'जुन्नर', hi: 'जुन्नर', ta: 'ஜுன்னர்', te: 'జున్నర్' },
+  Ale: { en: 'Ale', kn: 'ಅಲೆ', mr: 'आळे', hi: 'आले', ta: 'அலே', te: 'ఆలే' },
+  Rahata: { en: 'Rahata', kn: 'ರಹಾತಾ', mr: 'राहाता', hi: 'राहाता', ta: 'ரஹாதா', te: 'రహతా' },
+  Shirdi: { en: 'Shirdi', kn: 'ಶಿರ್ಡಿ', mr: 'शिर्डी', hi: 'शिरडी', ta: 'சீரடி', te: 'షిర్డీ' },
+  Vashi: { en: 'Vashi', kn: 'ವಾಶಿ', mr: 'वाशी', hi: 'वाशी', ta: 'வாஷி', te: 'వాషి' },
+  Devanahalli: { en: 'Devanahalli', kn: 'ದೇವನಹಳ್ಳಿ', mr: 'देवनहळ्ळी', hi: 'देवनहल्ली', ta: 'தேவனஹள்ளி', te: 'దేవనహళ్లి' },
+  Macleshwar: { en: 'Macleshwar', kn: 'ಮ್ಯಾಕ್ಲೆಶ್ವರ್', mr: 'मॅक्लेश्वर', hi: 'मैक्लेश्वर', ta: 'மேக்லேஷ்வர்', te: 'మ్యాక్లేశ్వర్' },
+  Saragur: { en: 'Saragur', kn: 'ಸರಗೂರು', mr: 'सरगूर', hi: 'सरगुर', ta: 'சராகூர்', te: 'సరగూర్' },
+  Hubballi: { en: 'Hubballi', kn: 'ಹುಬ್ಬಳ್ಳಿ', mr: 'हुबळी', hi: 'हुबली', ta: 'ஹூப்ளி', te: 'హుబ్బಳ್ಳಿ' },
+}
+
+const EXTRA_STRINGS = {
+  en: {
+    'action.sell.lot': 'Sell', 'sell.error': 'Could not put this lot up for sale.',
+    'voice.issue.quantity': 'quantity', 'voice.issue.unit': 'unit', 'voice.issue.crop': 'crop', 'voice.issue.crop.ambiguous': 'one clear crop', 'voice.issue.location': 'location', 'voice.issue.location.ambiguous': 'one clear location', 'voice.issue.harvest.date': 'harvest date',
+    'price.chart.axis': 'Price (₹/quintal)', 'price.chart.date': 'Date',
+    'ai.need.lot.for.buyers': 'Create a lot for this crop first so I can find matching buyers.', 'ai.need.lot.for.market': 'Create a lot for this crop first so I can compare net realization after transport.',
+    'market.needCrop': 'Which crop should I check?', 'market.error': 'I could not load the market data right now. Please try again.',
+    'market.current': ({ crop, current }) => current.best ? `${crop} prices are ${current.minimum} to ${current.maximum} per quintal across available markets. ${current.best.market_name} is highest at ${current.best.price} per quintal (${current.date}).` : `No ${crop} market price is available yet.`,
+    'market.trend': ({ crop, analysis }) => analysis.latest ? `${crop} prices are ${analysis.direction.toLowerCase()}. The latest average is ${analysis.latest.price} per quintal, ${analysis.changePercent === null ? 'with no comparable percentage change' : `${Math.abs(analysis.changePercent).toFixed(2)}% ${analysis.change >= 0 ? 'higher' : 'lower'} than the previous available day`} (${analysis.latest.date}).` : `I do not have enough ${crop} price history to calculate a trend.`,
+    'market.forecast': ({ crop, forecast }) => forecast.forecast === null ? `I do not have enough recent ${crop} price history to make a reliable forecast.` : `The estimated ${crop} price for ${forecast.forecastDate} is around ${forecast.forecast.toFixed(2)} per quintal, based on ${forecast.sourceStart} to ${forecast.sourceEnd}. This is a forecast, not a guaranteed price.`,
+    'market.decision': ({ crop, current, forecast }) => forecast.forecast === null ? `I do not have enough recent ${crop} history to advise whether to wait. Compare any confirmed buyer offer with today's available price.` : `The short-term ${crop} estimate is ${forecast.forecast > current.best?.price ? 'higher' : 'not higher'} than the latest price. The forecast is uncertain, so compare any guaranteed buyer offer before deciding.`,
+    'market.market': ({ crop, results }) => results.length ? `${results[0].market_name} has the highest estimated net realization for ${crop} after transport cost. The estimated net is ${results[0].net_realization}.` : `I could not find market comparison data for ${crop}.`,
+    'market.buyers': ({ crop, matches }) => matches.length ? `I found ${matches.length} buyer matches for ${crop}: ${matches.slice(0, 3).map((match) => `${match.company_name} at ${match.preferred_price || 'an unspecified price'} per ${match.preferred_price_unit}`).join(', ')}.` : `I could not find an active buyer demand large enough for this ${crop} lot.`,
+    'buyer.explanation.quantity': 'Demand can cover the full lot quantity', 'buyer.explanation.price': 'Preferred price meets or exceeds current market levels', 'buyer.explanation.district': 'Buyer operates in the same district', 'buyer.explanation.verified': 'Verified buyer profile', 'buyer.explanation.crop': 'Crop match only', 'offer.demo.message': ({ buyer, lot }) => `Demo offer from ${buyer} for lot ${lot}.`,
+  },
+  kn: {
+    'action.sell.lot': 'ಮಾರಾಟ ಮಾಡಿ', 'sell.error': 'ಈ ಲಾಟ್ ಅನ್ನು ಮಾರಾಟಕ್ಕೆ ಇಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.',
+    'voice.issue.quantity': 'ಪ್ರಮಾಣ', 'voice.issue.unit': 'ಘಟಕ', 'voice.issue.crop': 'ಬೆಳೆ', 'voice.issue.crop.ambiguous': 'ಒಂದು ಸ್ಪಷ್ಟ ಬೆಳೆ', 'voice.issue.location': 'ಸ್ಥಳ', 'voice.issue.location.ambiguous': 'ಒಂದು ಸ್ಪಷ್ಟ ಸ್ಥಳ', 'voice.issue.harvest.date': 'ಕಟಾವು ದಿನಾಂಕ',
+    'price.chart.axis': 'ಬೆಲೆ (₹/ಕ್ವಿಂಟಲ್)', 'price.chart.date': 'ದಿನಾಂಕ',
+    'ai.need.lot.for.buyers': 'ಹೊಂದಾಣಿಕೆಯ ಖರೀದಿದಾರರನ್ನು ಹುಡುಕಲು ಮೊದಲು ಈ ಬೆಳೆಗೆ ಲಾಟ್ ರಚಿಸಿ.', 'ai.need.lot.for.market': 'ಸಾರಿಗೆ ನಂತರದ ನಿವ್ವಳ ಗಳಿಕೆಯನ್ನು ಹೋಲಿಸಲು ಮೊದಲು ಈ ಬೆಳೆಗೆ ಲಾಟ್ ರಚಿಸಿ.',
+    'market.needCrop': 'ಯಾವ ಬೆಳೆಯನ್ನು ಪರಿಶೀಲಿಸಬೇಕು?', 'market.error': 'ಈಗ ಮಾರುಕಟ್ಟೆ ದತ್ತಾಂಶವನ್ನು ಲೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
+    'market.current': ({ crop, current }) => current.best ? `${crop} ಬೆಲೆಗಳು ಲಭ್ಯವಿರುವ ಮಾರುಕಟ್ಟೆಗಳಲ್ಲಿ ಪ್ರತಿ ಕ್ವಿಂಟಲ್‌ಗೆ ${current.minimum} ರಿಂದ ${current.maximum} ಇವೆ. ${current.best.market_name} ನಲ್ಲಿ ಅತಿ ಹೆಚ್ಚು ಬೆಲೆ ${current.best.price} (${current.date}).` : `ಈಗ ${crop} ಮಾರುಕಟ್ಟೆ ಬೆಲೆ ಲಭ್ಯವಿಲ್ಲ.`,
+    'market.trend': ({ crop, analysis }) => analysis.latest ? `${crop} ಬೆಲೆಗಳು ${analysis.direction === 'RISING' ? 'ಏರುತ್ತಿವೆ' : analysis.direction === 'FALLING' ? 'ಇಳಿಯುತ್ತಿವೆ' : 'ಸ್ಥಿರವಾಗಿವೆ'}. ಇತ್ತೀಚಿನ ಸರಾಸರಿ ${analysis.latest.price} ಪ್ರತಿ ಕ್ವಿಂಟಲ್, ಹಿಂದಿನ ದಿನಕ್ಕಿಂತ ${Math.abs(analysis.changePercent || 0).toFixed(2)}% ${analysis.change >= 0 ? 'ಹೆಚ್ಚು' : 'ಕಡಿಮೆ'}.` : `${crop} ಬೆಲೆ ಪ್ರವೃತ್ತಿ ಲೆಕ್ಕಿಸಲು ಸಾಕಷ್ಟು ಇತಿಹಾಸವಿಲ್ಲ.`,
+    'market.forecast': ({ crop, forecast }) => forecast.forecast === null ? `ವಿಶ್ವಾಸಾರ್ಹ ಮುನ್ಸೂಚನೆ ನೀಡಲು ${crop} ಬೆಲೆ ಇತಿಹಾಸ ಸಾಕಾಗುವುದಿಲ್ಲ.` : `${forecast.forecastDate} ರಂದು ${crop} ಬೆಲೆ ಸುಮಾರು ${forecast.forecast.toFixed(2)} ಪ್ರತಿ ಕ್ವಿಂಟಲ್ ಎಂದು ಅಂದಾಜಿಸಲಾಗಿದೆ. ಇದು ಖಚಿತ ಬೆಲೆಯಲ್ಲ, ಮುನ್ಸೂಚನೆ ಮಾತ್ರ.`,
+    'market.decision': ({ crop, forecast }) => forecast.forecast === null ? `${crop} ಕಾಯಬೇಕೇ ಎಂದು ಹೇಳಲು ಸಾಕಷ್ಟು ಇತಿಹಾಸವಿಲ್ಲ. ಖಚಿತ ಖರೀದಿ ಕೊಡುಗೆಯನ್ನು ಇಂದಿನ ಬೆಲೆಯೊಂದಿಗೆ ಹೋಲಿಸಿ.` : `${crop} ಅಲ್ಪಾವಧಿಯ ಅಂದಾಜನ್ನು ನೋಡಿ ನಿರ್ಧರಿಸಿ. ಮುನ್ಸೂಚನೆ ಖಚಿತವಲ್ಲ; ಖಚಿತ ಖರೀದಿ ಕೊಡುಗೆಯನ್ನು ಹೋಲಿಸಿ.`,
+    'market.market': ({ crop, results }) => results.length ? `ಸಾರಿಗೆ ವೆಚ್ಚದ ನಂತರ ${crop} ಗೆ ${results[0].market_name} ಅತಿ ಹೆಚ್ಚು ಅಂದಾಜು ನಿವ್ವಳ ಗಳಿಕೆಯನ್ನು ನೀಡುತ್ತದೆ.` : `${crop} ಗೆ ಮಾರುಕಟ್ಟೆ ಹೋಲಿಕೆ ದತ್ತಾಂಶ ಸಿಗಲಿಲ್ಲ.`,
+    'market.buyers': ({ crop, matches }) => matches.length ? `${crop} ಗೆ ${matches.length} ಖರೀದಿದಾರರು ಸಿಕ್ಕಿದ್ದಾರೆ: ${matches.slice(0, 3).map((match) => match.company_name).join(', ')}.` : `ಈ ${crop} ಲಾಟ್‌ಗೆ ಸಾಕಷ್ಟು ಸಕ್ರಿಯ ಖರೀದಿ ಬೇಡಿಕೆ ಸಿಗಲಿಲ್ಲ.`,
+    'buyer.explanation.quantity': 'ಬೇಡಿಕೆಯು ಸಂಪೂರ್ಣ ಲಾಟ್ ಪ್ರಮಾಣವನ್ನು ಪೂರೈಸಬಹುದು', 'buyer.explanation.price': 'ಆದ್ಯತೆಯ ಬೆಲೆ ಪ್ರಸ್ತುತ ಮಾರುಕಟ್ಟೆ ಮಟ್ಟವನ್ನು ಪೂರೈಸುತ್ತದೆ ಅಥವಾ ಮೀರಿಸುತ್ತದೆ', 'buyer.explanation.district': 'ಖರೀದಿದಾರರು ಅದೇ ಜಿಲ್ಲೆಯಲ್ಲಿ ಕಾರ್ಯನಿರ್ವಹಿಸುತ್ತಾರೆ', 'buyer.explanation.verified': 'ಪರಿಶೀಲಿಸಿದ ಖರೀದಿದಾರರ ಪ್ರೊಫೈಲ್', 'buyer.explanation.crop': 'ಬೆಳೆ ಹೊಂದಾಣಿಕೆ ಮಾತ್ರ', 'offer.demo.message': ({ buyer, lot }) => `${buyer} ಅವರಿಂದ ${lot} ಲಾಟ್‌ಗೆ ಪ್ರದರ್ಶನ ಕೊಡುಗೆ.`,
+  },
+  mr: {
+    'action.sell.lot': 'विक्री करा', 'sell.error': 'हा लॉट विक्रीसाठी ठेवता आला नाही.',
+    'voice.issue.quantity': 'प्रमाण', 'voice.issue.unit': 'एकक', 'voice.issue.crop': 'पीक', 'voice.issue.crop.ambiguous': 'एक स्पष्ट पीक', 'voice.issue.location': 'स्थान', 'voice.issue.location.ambiguous': 'एक स्पष्ट स्थान', 'voice.issue.harvest.date': 'कापणी तारीख',
+    'price.chart.axis': 'किंमत (₹/क्विंटल)', 'price.chart.date': 'तारीख',
+    'ai.need.lot.for.buyers': 'खरेदीदार शोधण्यासाठी आधी या पिकाचा लॉट तयार करा.', 'ai.need.lot.for.market': 'वाहतूक खर्चानंतरची निव्वळ कमाई पाहण्यासाठी आधी लॉट तयार करा.',
+    'market.needCrop': 'कोणत्या पिकाची माहिती पाहू?', 'market.error': 'सध्या बाजाराचा डेटा लोड करता आला नाही. पुन्हा प्रयत्न करा.',
+    'market.current': ({ crop, current }) => current.best ? `${crop} चे दर उपलब्ध बाजारांत प्रति क्विंटल ${current.minimum} ते ${current.maximum} आहेत. ${current.best.market_name} येथे सर्वाधिक दर ${current.best.price} आहे (${current.date}).` : `${crop} चा बाजारभाव अद्याप उपलब्ध नाही.`,
+    'market.trend': ({ crop, analysis }) => analysis.latest ? `${crop} चे दर ${analysis.direction === 'RISING' ? 'वाढत' : analysis.direction === 'FALLING' ? 'घटत' : 'स्थिर'} आहेत. नवीनतम सरासरी ${analysis.latest.price} प्रति क्विंटल आहे.` : `${crop} च्या दरांचा कल सांगण्यासाठी पुरेसा इतिहास नाही.`,
+    'market.forecast': ({ crop, forecast }) => forecast.forecast === null ? `${crop} साठी विश्वासार्ह अंदाज देण्याइतका अलीकडील इतिहास नाही.` : `${forecast.forecastDate} रोजी ${crop} चा अंदाजे दर ${forecast.forecast.toFixed(2)} प्रति क्विंटल आहे. हा अंदाज आहे, हमीचा दर नाही.`,
+    'market.decision': ({ crop }) => `${crop} विकायचे की थांबायचे हे ठरवताना अंदाज अनिश्चित आहे. खात्रीशीर खरेदी ऑफरची आजच्या दराशी तुलना करा.`,
+    'market.market': ({ crop, results }) => results.length ? `वाहतूक खर्चानंतर ${crop} साठी ${results[0].market_name} येथे सर्वाधिक अंदाजे निव्वळ कमाई मिळते.` : `${crop} साठी बाजार तुलना डेटा सापडला नाही.`,
+    'market.buyers': ({ crop, matches }) => matches.length ? `${crop} साठी ${matches.length} खरेदीदार सापडले: ${matches.slice(0, 3).map((match) => match.company_name).join(', ')}.` : `या ${crop} लॉटसाठी पुरेशी सक्रिय खरेदी मागणी सापडली नाही.`,
+    'buyer.explanation.quantity': 'मागणी संपूर्ण लॉटचे प्रमाण पूर्ण करू शकते', 'buyer.explanation.price': 'प्राधान्य किंमत सध्याच्या बाजारभावाइतकी किंवा त्याहून अधिक आहे', 'buyer.explanation.district': 'खरेदीदार त्याच जिल्ह्यात कार्यरत आहे', 'buyer.explanation.verified': 'सत्यापित खरेदीदार प्रोफाइल', 'buyer.explanation.crop': 'फक्त पीक जुळते', 'offer.demo.message': ({ buyer, lot }) => `${buyer} कडून ${lot} लॉटसाठी डेमो ऑफर.`,
+  },
+  hi: {
+    'action.sell.lot': 'बेचें', 'sell.error': 'इस लॉट को बिक्री के लिए नहीं रखा जा सका।',
+    'voice.issue.quantity': 'मात्रा', 'voice.issue.unit': 'इकाई', 'voice.issue.crop': 'फसल', 'voice.issue.crop.ambiguous': 'एक स्पष्ट फसल', 'voice.issue.location': 'स्थान', 'voice.issue.location.ambiguous': 'एक स्पष्ट स्थान', 'voice.issue.harvest.date': 'कटाई की तारीख',
+    'price.chart.axis': 'मूल्य (₹/क्विंटल)', 'price.chart.date': 'तारीख',
+    'ai.need.lot.for.buyers': 'खरीदार खोजने के लिए पहले इस फसल का लॉट बनाएं।', 'ai.need.lot.for.market': 'परिवहन के बाद शुद्ध कमाई की तुलना करने के लिए पहले लॉट बनाएं।',
+    'market.needCrop': 'मैं किस फसल की जांच करूं?', 'market.error': 'अभी बाजार का डेटा लोड नहीं हो सका। कृपया फिर कोशिश करें।',
+    'market.current': ({ crop, current }) => current.best ? `${crop} के भाव उपलब्ध बाजारों में ${current.minimum} से ${current.maximum} प्रति क्विंटल हैं। ${current.best.market_name} में सबसे अधिक भाव ${current.best.price} है (${current.date})।` : `${crop} का बाजार भाव अभी उपलब्ध नहीं है।`,
+    'market.trend': ({ crop, analysis }) => analysis.latest ? `${crop} के भाव ${analysis.direction === 'RISING' ? 'बढ़ रहे हैं' : analysis.direction === 'FALLING' ? 'घट रहे हैं' : 'स्थिर हैं'}। नवीनतम औसत ${analysis.latest.price} प्रति क्विंटल है।` : `${crop} के भाव का रुझान बताने के लिए पर्याप्त इतिहास नहीं है।`,
+    'market.forecast': ({ crop, forecast }) => forecast.forecast === null ? `${crop} के लिए विश्वसनीय अनुमान देने हेतु पर्याप्त हाल का इतिहास नहीं है।` : `${forecast.forecastDate} को ${crop} का अनुमानित भाव ${forecast.forecast.toFixed(2)} प्रति क्विंटल है। यह अनुमान है, गारंटी नहीं।`,
+    'market.decision': ({ crop }) => `${crop} बेचने या रुकने का निर्णय सावधानी से लें। पक्की खरीदार पेशकश की आज के भाव से तुलना करें।`,
+    'market.market': ({ crop, results }) => results.length ? `परिवहन लागत के बाद ${crop} के लिए ${results[0].market_name} में सबसे अधिक अनुमानित शुद्ध कमाई है।` : `${crop} के लिए बाजार तुलना उपलब्ध नहीं है।`,
+    'market.buyers': ({ crop, matches }) => matches.length ? `${crop} के लिए ${matches.length} खरीदार मिले: ${matches.slice(0, 3).map((match) => match.company_name).join(', ')}।` : `इस ${crop} लॉट के लिए पर्याप्त सक्रिय खरीदार मांग नहीं मिली।`,
+    'buyer.explanation.quantity': 'मांग पूरे लॉट की मात्रा को पूरा कर सकती है', 'buyer.explanation.price': 'पसंदीदा मूल्य वर्तमान बाजार स्तर के बराबर या उससे अधिक है', 'buyer.explanation.district': 'खरीदार उसी जिले में काम करता है', 'buyer.explanation.verified': 'सत्यापित खरीदार प्रोफाइल', 'buyer.explanation.crop': 'केवल फसल का मिलान', 'offer.demo.message': ({ buyer, lot }) => `${buyer} की ओर से ${lot} लॉट के लिए डेमो ऑफर।`,
+  },
+  ta: {
+    'action.sell.lot': 'விற்கவும்', 'sell.error': 'இந்த லாட்டை விற்பனைக்கு வைக்க முடியவில்லை.',
+    'voice.issue.quantity': 'அளவு', 'voice.issue.unit': 'அலகு', 'voice.issue.crop': 'பயிர்', 'voice.issue.crop.ambiguous': 'தெளிவான ஒரு பயிர்', 'voice.issue.location': 'இடம்', 'voice.issue.location.ambiguous': 'தெளிவான ஒரு இடம்', 'voice.issue.harvest.date': 'அறுவடை தேதி',
+    'price.chart.axis': 'விலை (₹/குவிண்டால்)', 'price.chart.date': 'தேதி',
+    'ai.need.lot.for.buyers': 'பொருந்தும் வாங்குபவர்களைக் கண்டறிய முதலில் இந்தப் பயிருக்கு லாட் உருவாக்கவும்.', 'ai.need.lot.for.market': 'போக்குவரத்துக்குப் பிந்தைய நிகர வருவாயை ஒப்பிட முதலில் லாட் உருவாக்கவும்.',
+    'market.needCrop': 'எந்தப் பயிரைச் சரிபார்க்க வேண்டும்?', 'market.error': 'இப்போது சந்தைத் தரவை ஏற்ற முடியவில்லை. மீண்டும் முயற்சிக்கவும்.',
+    'market.current': ({ crop, current }) => current.best ? `${crop} விலை கிடைக்கும் சந்தைகளில் குவிண்டாலுக்கு ${current.minimum} முதல் ${current.maximum} வரை உள்ளது. ${current.best.market_name} அதிகபட்சமாக ${current.best.price} (${current.date}) வழங்குகிறது.` : `${crop} சந்தை விலை இன்னும் கிடைக்கவில்லை.`,
+    'market.trend': ({ crop, analysis }) => analysis.latest ? `${crop} விலை ${analysis.direction === 'RISING' ? 'உயர்கிறது' : analysis.direction === 'FALLING' ? 'குறைகிறது' : 'நிலையாக உள்ளது'}. சமீபத்திய சராசரி குவிண்டாலுக்கு ${analysis.latest.price}.` : `${crop} விலைப் போக்கைக் கணக்கிட போதுமான வரலாறு இல்லை.`,
+    'market.forecast': ({ crop, forecast }) => forecast.forecast === null ? `${crop} க்கு நம்பகமான முன்னறிவிப்பு செய்ய போதுமான சமீபத்திய வரலாறு இல்லை.` : `${forecast.forecastDate} அன்று ${crop} விலை குவிண்டாலுக்கு சுமார் ${forecast.forecast.toFixed(2)} என மதிப்பிடப்படுகிறது. இது உத்தரவாத விலை அல்ல.`,
+    'market.decision': ({ crop }) => `${crop} இன்று விற்கலாமா காத்திருக்கலாமா என்பதை தீர்மானிக்கும் போது உறுதியான வாங்குபவர் சலுகையுடன் இன்றைய விலையை ஒப்பிடவும்.`,
+    'market.market': ({ crop, results }) => results.length ? `போக்குவரத்துச் செலவுக்குப் பிறகு ${crop} க்கு ${results[0].market_name} அதிக நிகர வருவாயைக் கொண்டுள்ளது.` : `${crop} க்கான சந்தை ஒப்பீடு கிடைக்கவில்லை.`,
+    'market.buyers': ({ crop, matches }) => matches.length ? `${crop} க்கு ${matches.length} வாங்குபவர்கள் கிடைத்தனர்: ${matches.slice(0, 3).map((match) => match.company_name).join(', ')}.` : `இந்த ${crop} லாட்டிற்கு போதுமான செயலில் உள்ள வாங்குபவர் தேவை இல்லை.`,
+    'buyer.explanation.quantity': 'தேவை முழு லாட் அளவையும் பூர்த்தி செய்யும்', 'buyer.explanation.price': 'விருப்ப விலை தற்போதைய சந்தை அளவை அடைகிறது அல்லது மீறுகிறது', 'buyer.explanation.district': 'வாங்குபவர் அதே மாவட்டத்தில் செயல்படுகிறார்', 'buyer.explanation.verified': 'சரிபார்க்கப்பட்ட வாங்குபவர் சுயவிவரம்', 'buyer.explanation.crop': 'பயிர் பொருத்தம் மட்டும்', 'offer.demo.message': ({ buyer, lot }) => `${buyer} வழங்கும் ${lot} லாட்டிற்கான டெமோ சலுகை.`,
+  },
+  te: {
+    'action.sell.lot': 'అమ్మండి', 'sell.error': 'ఈ లాట్‌ను అమ్మకానికి ఉంచలేకపోయాము.',
+    'voice.issue.quantity': 'పరిమాణం', 'voice.issue.unit': 'యూనిట్', 'voice.issue.crop': 'పంట', 'voice.issue.crop.ambiguous': 'స్పష్టమైన ఒక పంట', 'voice.issue.location': 'ప్రదేశం', 'voice.issue.location.ambiguous': 'స్పష్టమైన ఒక ప్రదేశం', 'voice.issue.harvest.date': 'కోత తేదీ',
+    'price.chart.axis': 'ధర (₹/క్వింటాల్)', 'price.chart.date': 'తేదీ',
+    'ai.need.lot.for.buyers': 'సరిపోలే కొనుగోలుదారులను కనుగొనడానికి ముందుగా ఈ పంటకు లాట్ సృష్టించండి.', 'ai.need.lot.for.market': 'రవాణా తర్వాత నికర ఆదాయాన్ని పోల్చడానికి ముందుగా లాట్ సృష్టించండి.',
+    'market.needCrop': 'ఏ పంటను పరిశీలించాలి?', 'market.error': 'ఇప్పుడు మార్కెట్ డేటాను లోడ్ చేయలేకపోయాను. మళ్లీ ప్రయత్నించండి.',
+    'market.current': ({ crop, current }) => current.best ? `${crop} ధరలు అందుబాటులో ఉన్న మార్కెట్లలో క్వింటాల్‌కు ${current.minimum} నుండి ${current.maximum} వరకు ఉన్నాయి. ${current.best.market_name}లో అత్యధిక ధర ${current.best.price} (${current.date}).` : `${crop} మార్కెట్ ధర ఇంకా అందుబాటులో లేదు.`,
+    'market.trend': ({ crop, analysis }) => analysis.latest ? `${crop} ధరలు ${analysis.direction === 'RISING' ? 'పెరుగుతున్నాయి' : analysis.direction === 'FALLING' ? 'తగ్గుతున్నాయి' : 'స్థిరంగా ఉన్నాయి'}. తాజా సగటు క్వింటాల్‌కు ${analysis.latest.price}.` : `${crop} ధరల ధోరణిని లెక్కించడానికి తగిన చరిత్ర లేదు.`,
+    'market.forecast': ({ crop, forecast }) => forecast.forecast === null ? `${crop}కు నమ్మకమైన అంచనా ఇవ్వడానికి తగిన తాజా చరిత్ర లేదు.` : `${forecast.forecastDate}న ${crop} ధర క్వింటాల్‌కు సుమారు ${forecast.forecast.toFixed(2)}గా అంచనా. ఇది హామీ ధర కాదు.`,
+    'market.decision': ({ crop }) => `${crop}ను ఇప్పుడు అమ్మాలా వేచి ఉండాలా నిర్ణయించే ముందు ఖచ్చితమైన కొనుగోలు ఆఫర్‌ను తాజా ధరతో పోల్చండి.`,
+    'market.market': ({ crop, results }) => results.length ? `రవాణా ఖర్చు తర్వాత ${crop}కు ${results[0].market_name}లో అత్యధిక అంచనా నికర ఆదాయం ఉంది.` : `${crop}కు మార్కెట్ పోలిక డేటా దొరకలేదు.`,
+    'market.buyers': ({ crop, matches }) => matches.length ? `${crop}కు ${matches.length} కొనుగోలుదారులు దొరికారు: ${matches.slice(0, 3).map((match) => match.company_name).join(', ')}.` : `ఈ ${crop} లాట్‌కు తగిన క్రియాశీల కొనుగోలు డిమాండ్ దొరకలేదు.`,
+    'buyer.explanation.quantity': 'డిమాండ్ మొత్తం లాట్ పరిమాణాన్ని అందుకోగలదు', 'buyer.explanation.price': 'ఇష్టమైన ధర ప్రస్తుత మార్కెట్ స్థాయిని చేరుతుంది లేదా మించుతుంది', 'buyer.explanation.district': 'కొనుగోలుదారు అదే జిల్లాలో పనిచేస్తున్నారు', 'buyer.explanation.verified': 'ధృవీకరించిన కొనుగోలుదారు ప్రొఫైల్', 'buyer.explanation.crop': 'పంట సరిపోలిక మాత్రమే', 'offer.demo.message': ({ buyer, lot }) => `${buyer} నుండి ${lot} లాట్ కోసం డెమో ఆఫర్.`,
+  },
+}
+
+function displayValue(group, value, language) {
+  return DISPLAY_VALUES[group]?.[value]?.[language] || DISPLAY_VALUES[group]?.[value]?.en || value
+}
+
+export function localizedCropName(name, language) { return displayValue('crop', name, language) }
+export function localizedUnit(unit, language) { return displayValue('unit', unit, language) }
+export function localizedStatus(status, language) { return displayValue('status', status, language) }
+export function localizedTrend(trend, language) { return displayValue('trend', trend, language) }
+export function localizedBuyerType(type, language) { return displayValue('buyerType', type, language) }
+export function localizedVerification(status, language) { return displayValue('verification', status, language) }
+export function localizedOfferStatus(status, language) { return displayValue('offerStatus', status, language) }
+export function localizedOrderStatus(status, language) { return displayValue('orderStatus', status, language) }
+export function localizedLocationName(name, language) { return LOCATION_VALUES[name]?.[language] || LOCATION_VALUES[name]?.en || name }
+export function localizedLocation(location, language) {
+  return [location.village, location.tehsil, location.district, location.state].filter(Boolean).map((value) => localizedLocationName(value, language)).join(', ')
+}
+
+export function localizedExplanation(explanation, t) {
+  const keys = {
+    'Demand can cover the full lot quantity': 'buyer.explanation.quantity',
+    'Preferred price meets or exceeds current market levels': 'buyer.explanation.price',
+    'Buyer operates in the same district': 'buyer.explanation.district',
+    'Verified buyer profile': 'buyer.explanation.verified',
+    'Crop match only': 'buyer.explanation.crop',
+  }
+  return String(explanation || '').split('; ').map((part) => keys[part] ? t(keys[part]) : part).join('; ')
+}
+
+export function localizedRecommendationReason(reason, t, language) {
+  const value = String(reason || '')
+  if (value === 'No comparable market data available') return t('rec.no.data')
+  const trend = value.match(/^Price trend is (RISING|FALLING|STABLE|INSUFFICIENT_DATA)$/)
+  if (trend) return `${t('rec.price.trend')}: ${localizedTrend(trend[1], language)}`
+  const advantage = value.match(/^₹([\d.]+) higher estimated net realization than the next-best market$/)
+  if (advantage) return `${advantage[1]} ${t('rec.advantage')} ${t('rec.next.best')}`
+  return t('rec.no.data')
+}
+
+export function localizedOfferMessage(message, t) {
+  const match = String(message || '').match(/^DEMO offer from (.+) for lot (.+)\.$/)
+  return match ? t('offer.demo.message', { buyer: match[1], lot: match[2] }) : message
+}
+
+export function localizeError(message, t) {
+  const value = String(message || '')
+  const known = [
+    ['Farmer profile not found', 'error.load.farm'],
+    ['Produce lot not found', 'lots.error.title'],
+    ['Buyer matches', 'buyer.load.error'],
+    ['No market price available', 'compare.none'],
+  ].find(([text]) => value.includes(text))
+  return known ? t(known[1]) : t('error.load.farm')
+}
+
 export function translate(lang, key, args) {
   const table = STRINGS[lang] || STRINGS.en
-  const entry = table[key] ?? STRINGS.en[key]
+  const entry = table[key] ?? EXTRA_STRINGS[lang]?.[key] ?? STRINGS.en[key] ?? EXTRA_STRINGS.en[key]
   if (typeof entry === 'function') return entry(args)
-  return entry ?? key
+  return entry ?? STRINGS.en['error.load.farm']
 }

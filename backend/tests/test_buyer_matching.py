@@ -10,9 +10,11 @@ from fastapi import HTTPException
 from app.models.entities import BuyerType, DemandStatus, FarmerProfile, LotStatus, OfferStatus, OrderStatus, VerificationStatus
 from app.routes.buyer_matching import accept_buyer_offer, create_buyer_offer, read_buyer_matches
 from app.routes.produce_lots import list_lots, sell_lot
+from app.seed_demo import DEMO_BUYERS, CROPS
 from app.services.buyer_matching import (
     build_buyer_match,
     calculate_match_score,
+    get_buyer_matches,
     is_demand_active,
     quantity_compatible,
     sort_matches,
@@ -71,6 +73,37 @@ def lot(quantity: str = "500", unit: str = "kg", district: str = "Thane", crop_n
 
 
 class BuyerMatchingLogicTests(unittest.TestCase):
+    def test_seeded_demands_cover_all_demo_crops_at_250_quintals(self):
+        crop_names = {crop["name"] for crop in CROPS}
+        demand_by_crop = {
+            demand_data["crop_name"]
+            for buyer_data in DEMO_BUYERS
+            for demand_data in buyer_data["demands"]
+        }
+
+        self.assertEqual(demand_by_crop, crop_names)
+        for buyer_data in DEMO_BUYERS:
+            for demand_data in buyer_data["demands"]:
+                self.assertEqual(demand_data["unit"], "quintal")
+                self.assertGreaterEqual(demand_data["quantity"], Decimal("250"))
+
+    def test_get_buyer_matches_returns_seed_style_match_for_250_quintal_lot(self):
+        crop_id = uuid4()
+        produce_lot = lot(quantity="250", unit="quintal")
+        produce_lot.crop_id = crop_id
+        buyer_demand = demand(quantity="1000", unit="quintal")
+        buyer_demand.crop_id = crop_id
+        market_price = SimpleNamespace(price_per_unit=Decimal("2400"), unit="quintal")
+        db = MagicMock()
+        db.scalar.side_effect = [produce_lot, market_price]
+        db.scalars.return_value.all.return_value = [buyer_demand]
+
+        matched_lot, matches = get_buyer_matches(db, produce_lot.id)
+
+        self.assertIs(matched_lot, produce_lot)
+        self.assertEqual(len(matches), 1)
+        self.assertEqual(matches[0].company_name, "FreshMart Foods")
+
     def test_quantity_compatible_accepts_full_lot(self):
         self.assertTrue(quantity_compatible(Decimal("500"), "kg", Decimal("1000"), "kg"))
         self.assertTrue(quantity_compatible(Decimal("500"), "kg", Decimal("5"), "quintal"))

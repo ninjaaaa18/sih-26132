@@ -322,7 +322,7 @@ export function matchYesNo(normalized, language) {
 // Demo crop lexicon (aliases -> canonical master-data name)
 // ---------------------------------------------------------------------------
 const CROP_ALIASES = {
-  Tomato: ['टमाटर', 'टोमॅटो', 'टमाटा', 'ಟೊಮ್ಯಾಟೊ', 'ಟೊಮಾಟೊ', 'தக்காளி', 'టమాటా', 'తక్కాలి', 'tamatar', 'tamater', 'takkali'],
+  Tomato: ['टमाटर', 'टोमॅटो', 'टमाटा', 'ಟೊಮ್ಯಾಟೊ', 'ಟೊಮಾಟೊ', 'ಟೊಮೆಟೊ', 'தக்காளி', 'టమాటా', 'తక్కాలి', 'tamatar', 'tamater', 'takkali'],
   Onion: ['प्याज', 'कांदा', 'ಈರುಳ್ಳಿ', 'வெங்காயம்', 'ఉల్లిపాయ', 'pyaaz', 'pyaj', 'kanda', 'ullipaya'],
   Potato: ['आलू', 'बटाटा', 'ಆಲೂಗಡ್ಡೆ', 'உருளைக்கிழங்கு', 'బంగాళాదుంప', 'aaloo', 'aloo', 'bataata', 'urulaikizhangu', 'bangaladumpa'],
   Maize: ['मक्का', 'मका', 'ಜೋಳ', 'சோளம்', 'మొక్కజొన్న', 'makka', 'maka', 'jola', 'cholam'],
@@ -444,11 +444,11 @@ export function parseVoiceTranscript(transcript, crops, locations, language = 'e
   const locationMatches = matchLocations(normalized, locations)
   const dateValue = parseVoiceDate(normalized, language)
 
-  if (!number) issues.push('quantity')
-  if (!unit) issues.push('unit')
-  if (cropMatches.length !== 1) issues.push(cropMatches.length ? 'one unambiguous crop' : 'crop')
-  if (locationMatches.length !== 1) issues.push(locationMatches.length ? 'one unambiguous location' : 'location')
-  if (!dateValue) issues.push('harvest date')
+  if (!number) issues.push('voice.issue.quantity')
+  if (!unit) issues.push('voice.issue.unit')
+  if (cropMatches.length !== 1) issues.push(cropMatches.length ? 'voice.issue.crop.ambiguous' : 'voice.issue.crop')
+  if (locationMatches.length !== 1) issues.push(locationMatches.length ? 'voice.issue.location.ambiguous' : 'voice.issue.location')
+  if (!dateValue) issues.push('voice.issue.harvest.date')
 
   return {
     values: {

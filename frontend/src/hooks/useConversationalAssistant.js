@@ -1,11 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { DEMO_FARMER_ID, apiFetch } from '../api'
+import { localizeError, localizedCropName, localizedLocation } from '../translations'
 import { matchYesNo, parseVoiceTranscript, speechLocale } from '../voiceParsing'
+import { detectIntent, INTENTS } from '../intentRouter'
+import { buildMarketAnswer, loadCropMarketData, summarizeCurrentPrices } from '../marketIntelligence'
 
 const FIELD_ORDER = ['crop_id', 'quantity', 'unit', 'location_id', 'harvest_date']
 const EMPTY_SLOTS = { crop_id: '', quantity: '', unit: '', harvest_date: '', location_id: '' }
 
-export function useConversationalAssistant({ crops, locations, language, t, onCreateLot, onSeeRecommendation }) {
+export function useConversationalAssistant({ crops, locations, language, t, onCreateLot, onSeeRecommendation, onViewPriceHistory }) {
   const [open, setOpen] = useState(false)
   const [messages, setMessages] = useState([])
   const [slots, setSlots] = useState({ ...EMPTY_SLOTS })
@@ -15,6 +18,7 @@ export function useConversationalAssistant({ crops, locations, language, t, onCr
   const [transcript, setTranscript] = useState('')
   const [error, setError] = useState('')
   const [createdLotId, setCreatedLotId] = useState(null)
+  const contextRef = useRef({ crop: null, location: null, lot: null })
   const recognitionRef = useRef(null)
   const dataRef = useRef({ crops, locations, t, language })
   dataRef.current = { crops, locations, t, language }
@@ -24,14 +28,14 @@ export function useConversationalAssistant({ crops, locations, language, t, onCr
   function cropEntry(id) { return dataRef.current.crops.find((c) => c.id === id) }
   function locationEntry(id) { return dataRef.current.locations.find((l) => l.id === id) }
 
-  const cropName = useCallback((id) => cropEntry(id)?.name || dataRef.current.t('table.unknown.crop'), [])
+  const cropName = useCallback((id) => localizedCropName(cropEntry(id)?.name, dataRef.current.language) || dataRef.current.t('table.unknown.crop'), [])
   const locationName = useCallback((id) => {
     const entry = locationEntry(id)
     if (!entry) return dataRef.current.t('table.unknown.location')
-    return [entry.village, entry.tehsil, entry.district, entry.state].filter(Boolean).join(', ')
+    return localizedLocation(entry, dataRef.current.language)
   }, [])
 
-  function tr(key) { return dataRef.current.t(key) }
+  function tr(key, args) { return dataRef.current.t(key, args) }
 
   function missingFields(current) {
     return FIELD_ORDER.filter((field) => !current[field])
@@ -74,7 +78,54 @@ export function useConversationalAssistant({ crops, locations, language, t, onCr
     setOpen(false)
   }
 
-  function processUtterance(rawText) {
+  async function answerIntent(route) {
+    if (!route.crop && [INTENTS.CURRENT_PRICE, INTENTS.PRICE_TREND, INTENTS.PRICE_FORECAST, INTENTS.SELL_DECISION, INTENTS.MARKET_RECOMMENDATION, INTENTS.FIND_BUYERS].includes(route.intent)) {
+      pushMessage('assistant', buildMarketAnswer('needCrop', {}, dataRef.current.language, tr))
+      return
+    }
+    if (route.crop) contextRef.current.crop = route.crop
+    try {
+      const crop = route.crop || contextRef.current.crop
+      if ([INTENTS.CURRENT_PRICE, INTENTS.PRICE_TREND, INTENTS.PRICE_FORECAST, INTENTS.SELL_DECISION].includes(route.intent)) {
+        const data = await loadCropMarketData(crop.id)
+        const kind = route.intent === INTENTS.CURRENT_PRICE ? 'current' : route.intent === INTENTS.PRICE_TREND ? 'trend' : route.intent === INTENTS.PRICE_FORECAST ? 'forecast' : 'decision'
+        pushMessage('assistant', buildMarketAnswer(kind, { crop: cropName(crop.id), current: summarizeCurrentPrices(data.records), analysis: data.analysis, forecast: data.forecast }, dataRef.current.language, tr))
+        if (onViewPriceHistory && (route.intent === INTENTS.PRICE_TREND || route.intent === INTENTS.PRICE_FORECAST)) {
+          const lotsResult = await apiFetch(`/api/v1/produce-lots?farmer_profile_id=${DEMO_FARMER_ID}`)
+          const lot = (lotsResult.lots || []).find((item) => item.crop_id === crop.id)
+          if (lot) onViewPriceHistory(lot)
+        }
+        return
+      }
+      if (route.intent === INTENTS.FIND_BUYERS) {
+        const lotsResult = await apiFetch(`/api/v1/produce-lots?farmer_profile_id=${DEMO_FARMER_ID}`)
+        const lots = lotsResult.lots || []
+        const lot = lots.find((item) => item.crop_id === crop.id)
+        if (!lot) { pushMessage('assistant', tr('ai.need.lot.for.buyers')); return }
+        const buyerData = await apiFetch(`/api/v1/produce-lots/${lot.id}/buyer-matches`)
+        contextRef.current.lot = lot
+        pushMessage('assistant', buildMarketAnswer('buyers', { crop: cropName(crop.id), matches: buyerData.matches || [] }, dataRef.current.language, tr))
+        return
+      }
+      if ([INTENTS.MARKET_RECOMMENDATION, INTENTS.COMPARE_MARKETS].includes(route.intent)) {
+        const lotsResult = await apiFetch(`/api/v1/produce-lots?farmer_profile_id=${DEMO_FARMER_ID}`)
+        const lot = (lotsResult.lots || []).find((item) => item.crop_id === crop.id)
+        if (!lot) { pushMessage('assistant', tr('ai.need.lot.for.market')); return }
+        const comparison = await apiFetch(`/api/v1/produce-lots/${lot.id}/net-realization`)
+        pushMessage('assistant', buildMarketAnswer('market', { crop: cropName(crop.id), results: comparison.results || [] }, dataRef.current.language, tr))
+        return
+      }
+      if (route.intent === INTENTS.MY_LOTS) {
+        const result = await apiFetch(`/api/v1/produce-lots?farmer_profile_id=${DEMO_FARMER_ID}`)
+        pushMessage('assistant', `${tr('ai.lots.found')} ${(result.lots || []).length}.`)
+        return
+      }
+    } catch {
+      pushMessage('assistant', buildMarketAnswer('error', {}, dataRef.current.language, tr))
+    }
+  }
+
+  async function processUtterance(rawText) {
     const text = String(rawText || '').trim()
     const currentPhase = phase
     if (!text) {
@@ -84,6 +135,14 @@ export function useConversationalAssistant({ crops, locations, language, t, onCr
     }
     pushMessage('farmer', text)
     setTranscript(text)
+
+    const route = detectIntent(text, dataRef.current.crops, dataRef.current.locations, { ...contextRef.current, language: dataRef.current.language })
+    if (route.command === 'cancel') { cancel(); return }
+    if (route.intent !== INTENTS.CREATE_LOT && route.intent !== INTENTS.UNKNOWN && route.intent !== INTENTS.HELP) {
+      await answerIntent(route)
+      if (currentPhase === 'speaking' && Object.values(slots).some(Boolean)) pushMessage('assistant', askFor(missingFields(slots)[0]))
+      return
+    }
 
     if (currentPhase === 'confirming') {
       handleConfirmation(text)
@@ -103,6 +162,7 @@ export function useConversationalAssistant({ crops, locations, language, t, onCr
       return
     }
     setSlots(next)
+    if (next.crop_id) contextRef.current.crop = cropEntry(next.crop_id)
     pushMessage('assistant', askFor(missing[0]))
   }
 
@@ -152,8 +212,9 @@ export function useConversationalAssistant({ crops, locations, language, t, onCr
       if (onCreateLot) await onCreateLot(created)
     } catch (requestError) {
       setPhase('error')
-      setError(requestError.message)
-      pushMessage('assistant', `${tr('ai.error')} ${requestError.message}`)
+      const errorMessage = localizeError(requestError.message, tr)
+      setError(errorMessage)
+      pushMessage('assistant', `${tr('ai.error')} ${errorMessage}`)
     }
   }
 

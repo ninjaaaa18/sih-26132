@@ -1,5 +1,6 @@
 from datetime import date, timedelta
 from decimal import Decimal
+from uuid import UUID
 
 from sqlalchemy import select
 
@@ -16,6 +17,7 @@ from app.models.entities import (
     Market,
     MarketPrice,
     MarketType,
+    ProduceLot,
     User,
     UserRole,
     UserStatus,
@@ -24,6 +26,7 @@ from app.models.entities import (
 
 DEMO_EMAIL = "demo.farmer@sih26132.local"
 DEMO_PHONE = "+91999926132"
+DEMO_FARMER_PROFILE_ID = UUID("00000000-2613-4261-8261-000000000001")
 
 CROPS = (
     {"name": "Tomato", "unit_default": "kg", "category": "vegetable", "seasonality": "kharif, rabi"},
@@ -66,8 +69,8 @@ DEMO_BUYERS = (
         "location_index": 3,
         "verification_status": VerificationStatus.VERIFIED,
         "demands": (
-            {"crop_name": "Tomato", "quantity": Decimal("1000"), "unit": "kg", "preferred_price": Decimal("2600"), "location_index": 3},
-            {"crop_name": "Onion", "quantity": Decimal("1000"), "unit": "kg", "preferred_price": Decimal("2300"), "location_index": 3},
+            {"crop_name": "Tomato", "quantity": Decimal("1000"), "unit": "quintal", "preferred_price": Decimal("2600"), "location_index": 3},
+            {"crop_name": "Onion", "quantity": Decimal("1000"), "unit": "quintal", "preferred_price": Decimal("2300"), "location_index": 3},
         ),
     },
     {
@@ -80,9 +83,9 @@ DEMO_BUYERS = (
         "location_index": 1,
         "verification_status": VerificationStatus.VERIFIED,
         "demands": (
-            {"crop_name": "Tomato", "quantity": Decimal("1000"), "unit": "kg", "preferred_price": Decimal("2550"), "location_index": 1},
-            {"crop_name": "Potato", "quantity": Decimal("1000"), "unit": "kg", "preferred_price": Decimal("1900"), "location_index": 1},
-            {"crop_name": "Maize", "quantity": Decimal("1000"), "unit": "kg", "preferred_price": Decimal("2250"), "location_index": 1},
+            {"crop_name": "Tomato", "quantity": Decimal("1000"), "unit": "quintal", "preferred_price": Decimal("2550"), "location_index": 1},
+            {"crop_name": "Potato", "quantity": Decimal("1000"), "unit": "quintal", "preferred_price": Decimal("1900"), "location_index": 1},
+            {"crop_name": "Maize", "quantity": Decimal("1000"), "unit": "quintal", "preferred_price": Decimal("2250"), "location_index": 1},
         ),
     },
     {
@@ -95,9 +98,9 @@ DEMO_BUYERS = (
         "location_index": 0,
         "verification_status": VerificationStatus.PENDING,
         "demands": (
-            {"crop_name": "Onion", "quantity": Decimal("1000"), "unit": "kg", "preferred_price": Decimal("2350"), "location_index": 0},
-            {"crop_name": "Potato", "quantity": Decimal("1000"), "unit": "kg", "preferred_price": Decimal("1850"), "location_index": 0},
-            {"crop_name": "Maize", "quantity": Decimal("1000"), "unit": "kg", "preferred_price": Decimal("2200"), "location_index": 0},
+            {"crop_name": "Onion", "quantity": Decimal("1000"), "unit": "quintal", "preferred_price": Decimal("2350"), "location_index": 0},
+            {"crop_name": "Potato", "quantity": Decimal("1000"), "unit": "quintal", "preferred_price": Decimal("1850"), "location_index": 0},
+            {"crop_name": "Maize", "quantity": Decimal("1000"), "unit": "quintal", "preferred_price": Decimal("2200"), "location_index": 0},
         ),
     },
 )
@@ -273,6 +276,7 @@ def seed_demo_data() -> FarmerProfile:
         farmer_profile = db.scalar(select(FarmerProfile).where(FarmerProfile.user_id == user.id))
         if farmer_profile is None:
             farmer_profile = FarmerProfile(
+                id=DEMO_FARMER_PROFILE_ID,
                 user_id=user.id,
                 full_name="Ramesh Patil",
                 farm_name="Patil Farms",
@@ -280,7 +284,16 @@ def seed_demo_data() -> FarmerProfile:
                 kyc_status=KycStatus.VERIFIED,
             )
             db.add(farmer_profile)
-        elif farmer_profile.location_id != locations[0].id:
+        elif farmer_profile.id != DEMO_FARMER_PROFILE_ID:
+            existing_lot = db.scalar(select(ProduceLot).where(ProduceLot.farmer_profile_id == farmer_profile.id))
+            if existing_lot is not None:
+                raise RuntimeError(
+                    "The demo farmer profile has existing produce lots and cannot be assigned the stable demo ID automatically. "
+                    "Migrate those lots before reseeding."
+                )
+            farmer_profile.id = DEMO_FARMER_PROFILE_ID
+
+        if farmer_profile.location_id != locations[0].id:
             farmer_profile.location_id = locations[0].id
 
         crop_by_name = {crop.name: crop for crop in crops}
