@@ -182,7 +182,68 @@ const RELATIVE_WORDS = {
   mr: { today: ['आज'], yesterday: ['काल'], beforeYesterday: ['परवा'] },
   kn: { today: ['ಇಂದು'], yesterday: ['ನಿನ್ನೆ'], beforeYesterday: ['ಮೊನ್ನೆ'] },
   ta: { today: ['இன்று'], yesterday: ['நேற்று'], beforeYesterday: ['நேற்று முன்தினம்'] },
-  te: { today: ['ఈరోజు'], yesterday: ['నిన్న'], beforeYesterday: ['ఎల్లుండి'] },
+  te: { today: ['ఈరోజు'], yesterday: ['నిన్న'], beforeYesterday: ['మొన్న'] },
+}
+
+// "N days/weeks ago" phrases per language (longest alternative listed first so
+// fused forms like "दिवसांपूर्वी" match before the plain "दिवस").
+const RELATIVE_AGO = {
+  en: { days: ['days', 'day'], weeks: ['weeks', 'week'], ago: ['ago', 'back', 'before'] },
+  kn: { days: ['ದಿನಗಳ', 'ದಿನ'], weeks: ['ವಾರಗಳ', 'ವಾರ'], ago: ['ಹಿಂದೆ'] },
+  mr: { days: ['दिवसांपूर्वी', 'दिवसापूर्वी', 'दिवस'], weeks: ['आठवड्यांपूर्वी', 'आठवडे'], ago: ['पूर्वी'] },
+  hi: { days: ['दिन'], weeks: ['हफ्तों', 'हफ्ते', 'सप्ताह'], ago: ['पहले', 'पूर्व'] },
+  ta: { days: ['நாட்களுக்கு முன்பு', 'நாட்கள்'], weeks: ['வாரங்களுக்கு முன்பு', 'வாரங்கள்'], ago: ['முன்பு'] },
+  te: { days: ['రోజుల క్రితం', 'రోజులు'], weeks: ['వారాల క్రితం', 'వారాలు'], ago: ['క్రితం'] },
+}
+
+function escapeRegex(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+// Resolve a number token (Arabic digit, native digit, or a short number word)
+// to an integer, returning null when it cannot be resolved.
+function resolveDateNumber(token, lang) {
+  const latin = toLatinDigits(token)
+  if (/^\d+$/.test(latin)) return Number(latin)
+  if (token === 'a' || token === 'an') return 1
+  const map = { ...(NUM_WORDS[lang] || {}), ...ENGLISH_NUMS }
+  return reduceNumberWords([token], map) || null
+}
+
+// Parse "N days/weeks ago" phrases in the given language. Returns the number of
+// days to subtract, or null when no such phrase is present.
+function relativeAgoDays(normalized, lang) {
+  const table = RELATIVE_AGO[lang]
+  if (!table) return null
+  const unitAlts = [...table.weeks, ...table.days].map(escapeRegex).join('|')
+  const agoOpt = table.ago.length ? `(?:\\s+(${table.ago.map(escapeRegex).join('|')}))?` : ''
+  const numberAlts = [
+    '\\d{1,3}', '\\p{N}{1,3}',
+    'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'a', 'an',
+    'ek', 'don', 'teen', 'char', 'paanch', 'saat', 'aath', 'nau', 'das', 'bees',
+    'ಒಂದು', 'ಎರಡು', 'ಮೂರು', 'ನಾಲ್ಕು', 'ಐದು', 'ಆರು', 'ಏಳು', 'ಎಂಟು', 'ಒಂಬತ್ತು', 'ಹತ್ತು',
+    'एक', 'दो', 'दोन', 'तीन', 'चार', 'पाच', 'पांच', 'सहा', 'सात', 'आठ', 'नऊ', 'दहा',
+    'ஒன்று', 'இரண்டு', 'மூன்று', 'நான்கு', 'ஐந்து', 'ஆறு', 'ஏழு', 'எட்டு', 'ஒன்பது', 'பத்து',
+    'ఒకటి', 'రెండు', 'మూడు', 'నాలుగు', 'ఐదు', 'ఆరు', 'ఏడు', 'ఎనిమిది', 'తొమ్మిది', 'పది',
+  ].join('|')
+  const re = new RegExp(`(^|[^\\p{L}\\p{M}\\p{N}])(${numberAlts})[\\s]*(${unitAlts})${agoOpt}([^\\p{L}\\p{M}\\p{N}]|$)`, 'u')
+  const m = normalized.match(re)
+  if (!m) return null
+  // number token is m[2]; the unit is m[3]; the ago word (if any) is m[4]
+  const numTok = m[2]
+  const unitTok = m[3]
+  const n = resolveDateNumber(numTok, lang)
+  if (!n || n <= 0) return null
+  const isWeek = table.weeks.some((p) => unitTok.includes(p))
+  const days = (isWeek ? 7 : 1) * n
+  return days > 0 && days <= 366 ? days : null
+}
+
+// Browser-local date +- n days.
+function daysAgoDate(n) {
+  const d = new Date()
+  d.setDate(d.getDate() - n)
+  return d
 }
 
 export function parseVoiceDate(normalized, language = 'en') {
@@ -198,32 +259,23 @@ export function parseVoiceDate(normalized, language = 'en') {
   }
 
   const rel = RELATIVE_WORDS[lang] || RELATIVE_WORDS.en
-  const offsets = []
+  const relativeHits = []
   for (const type of ['today', 'yesterday', 'beforeYesterday']) {
     for (const word of rel[type]) {
-      if (wordBoundaryIncludes(normalized, word)) offsets.push(type === 'today' ? 0 : type === 'yesterday' ? 1 : 2)
+      if (wordBoundaryIncludes(normalized, word)) {
+        relativeHits.push({ offset: type === 'today' ? 0 : type === 'yesterday' ? 1 : 2, word })
+      }
     }
   }
-  if (offsets.length > 1) return ''
-  if (offsets.length === 1) {
-    const date = new Date()
-    date.setDate(date.getDate() - offsets[0])
-    return formatLocalDate(date)
+  // Prefer the longest phrase so "day before yesterday" wins over its embedded
+  // "yesterday", and "நேற்று முன்தினம்" wins over "நேற்று". Never guess.
+  if (relativeHits.length > 0) {
+    relativeHits.sort((a, b) => b.word.length - a.word.length)
+    return formatLocalDate(daysAgoDate(relativeHits[0].offset))
   }
 
-  // "N days/weeks ago" — English words, accepted for any language for practicality
-  const agoMatch = normalized.match(/\b(\d+|one|two|three|four|five|six|seven|a|ek|don|teen|paanch)\s+(?:day|days|week|weeks|दिवस|दिन|ಉ|வாரம்)\s*(?:ago|back|पहले|ಹಿಂದೆ|முன்பு)?\b/)
-  if (agoMatch) {
-    const num = Number(agoMatch[1]) || reduceNumberWords([agoMatch[1]], NUM_WORDS.en) || 1
-    const isWeek = /week|வாரம்/.test(agoMatch[0])
-    const days = (isWeek ? 7 : 1) * num
-    if (days > 0 && days <= 366) {
-      const date = new Date()
-      date.setDate(date.getDate() - days)
-      return formatLocalDate(date)
-    }
-    return ''
-  }
+  const agoDays = relativeAgoDays(normalized, lang)
+  if (agoDays !== null) return formatLocalDate(daysAgoDate(agoDays))
 
   const dayMonth = normalized.match(new RegExp(`\\b(\\d{1,2})(?:st|nd|rd|th)?\\s+(${Object.keys(MONTH_INDEX).join('|')})(?:\\s+(\\d{4}))?\\b`))
   const monthDay = normalized.match(new RegExp(`\\b(${Object.keys(MONTH_INDEX).join('|')})\\s+(\\d{1,2})(?:st|nd|rd|th)?(?:\\s+(\\d{4}))?\\b`))
@@ -297,7 +349,11 @@ export function matchCrops(normalized, crops) {
 }
 
 // ---------------------------------------------------------------------------
-// Demo location lexicon (alias -> canonical name token)
+// Demo location lexicon (canonical seed token -> native-script aliases)
+// The canonical names (village/tehsil/district/state) come from the loaded
+// backend master data; this table only adds native-script lookup forms keyed
+// by the lowercase English seed token. 'bengaluru rural' covers the
+// Devanahalli (Bengaluru Rural) seed location's district.
 // ---------------------------------------------------------------------------
 const LOCATION_ALIASES = {
   'maharashtra': ['महाराष्ट्र', 'ಮಹಾರಾಷ್ಟ್ರ', 'மகாராஷ்டிரா', 'మహారాష్ట్ర'],
@@ -307,7 +363,8 @@ const LOCATION_ALIASES = {
   'ahmednagar': ['अहमदनगर', 'ಅಹಮದ್ನಗರ్'],
   'thane': ['ठाणे', 'ಠಾಣೆ'],
   'bengaluru': ['ಬೆಂಗಳೂರು', 'बेंगलुरु', 'பெங்களூரு', 'బెంగళూరు'],
-  'belagavi': ['ಬೆಳಗಾವಿ', 'बेळगाव'],
+  'bengaluru rural': ['ಬೆಂಗಳೂರು ಗ್ರಾಮಾಂತರ', 'ಬೆಂಗಳೂರು', 'ಬೆಂಗಳೂರು ಗ್ರಾಮೀಣ', 'बेंगलुरु ग्रामीण'],
+  'belagavi': ['ಬೆಳಗಾವಿ', 'बेळगाव', 'बेळगावी', 'बेलगाव', 'बेलगावी', 'பெலகாவி', 'బెళగావి'],
   'mysuru': ['ಮೈಸೂರು', 'मैसूर', 'மைசூர்', 'మైసూర్'],
   'dharwad': ['ಧಾರವಾಡ', 'धारवाड'],
   'niphad': ['निफाड', 'ನಿಫಾದ್'],
@@ -324,28 +381,53 @@ const LOCATION_ALIASES = {
   'rural': ['ಗ್ರಾಮೀಣ', 'ग्रामीण'],
 }
 
-const LOCATION_ALIAS_INDEX = {}
-for (const canonical of Object.keys(LOCATION_ALIASES)) {
-  LOCATION_ALIASES[canonical].forEach((a) => { LOCATION_ALIAS_INDEX[a] = canonical })
+// Single normalization used everywhere for Indic text. NFKC keeps Kannada and
+// the other Indian scripts intact (they have no compatibility decompositions
+// that would break them) while folding Latin/Devanagari variants consistently.
+function normalizeText(value) {
+  return String(value || '').normalize('NFKC').toLowerCase()
 }
 
-function locationTokensPresent(normalized, location) {
-  const tokens = [location.village, location.tehsil, location.district, location.state]
-  for (const token of tokens) {
-    if (!token) continue
-    const canonical = token.toLowerCase()
-    if (wordBoundaryIncludes(normalized, canonical)) return true
-    if (LOCATION_ALIAS_INDEX[canonical]) {
-      for (const alias of LOCATION_ALIASES[canonical] || []) {
-        if (wordBoundaryIncludes(normalized, alias)) return true
-      }
-    }
+// Does a candidate term appear in the (already lowercased) transcript?
+// - Latin terms use real word boundaries so "pune" doesn't match "june",
+//   nor "ale" match "sale".
+// - Native-script terms use a plain substring match, which is robust to the
+//   case suffixes Dravidian speech engines often append (e.g. "ಬೆಳಗಾವಿಯಲ್ಲಿ")
+//   and to matra/vowel-sign characters that are not \w.
+function termMatches(normalizedTranscript, term) {
+  if (!term) return false
+  const t = normalizeText(term)
+  if (!t) return false
+  if (/^[a-z0-9\s]+$/.test(t)) return wordBoundaryIncludes(normalizedTranscript, t)
+  return normalizedTranscript.includes(t)
+}
+
+// Collect the candidate name strings for one loaded location: its own English
+// tokens (village/tehsil/district/state) plus every native alias registered for
+// those tokens. Canonical names always derive from the backend master data.
+function locationCandidates(location) {
+  const terms = []
+  const seen = new Set()
+  const add = (value) => {
+    if (!value) return
+    const key = normalizeText(value)
+    if (seen.has(key)) return
+    seen.add(key)
+    terms.push(key)
   }
-  return false
+  for (const field of ['village', 'tehsil', 'district', 'state']) {
+    const token = location[field]
+    if (!token) continue
+    add(token)
+    const aliases = LOCATION_ALIASES[normalizeText(token)]
+    if (aliases) aliases.forEach(add)
+  }
+  return terms
 }
 
-export function matchLocations(normalized, locations) {
-  return locations.filter((location) => locationTokensPresent(normalized, location))
+export function matchLocations(normalizedTranscript, locations) {
+  const n = normalizeText(normalizedTranscript)
+  return locations.filter((location) => locationCandidates(location).some((term) => termMatches(n, term)))
 }
 
 // ---------------------------------------------------------------------------
