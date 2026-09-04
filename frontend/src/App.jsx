@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { API_BASE_URL, DEMO_FARMER_ID, apiFetch } from './api'
-import { LANGS, VOICE_LANGS, translate } from './translations'
-import { parseVoiceTranscript } from './voiceParsing'
+import { LANGS, translate } from './translations'
+import { parseVoiceTranscript, speechLocale } from './voiceParsing'
 import ConversationalAssistant from './components/ConversationalAssistant'
 import './App.css'
 
@@ -124,10 +124,15 @@ function App() {
       setVoiceError(t('voice.unsupported'))
       return
     }
+    const locale = speechLocale(language)
+    if (!locale) {
+      setVoiceError(t('ai.unsupported.lang'))
+      return
+    }
     const recognition = new SpeechRecognition()
     recognition.continuous = false
     recognition.interimResults = false
-    recognition.lang = VOICE_LANGS[language] || 'en-IN'
+    recognition.lang = locale
     recognition.onstart = () => { setVoiceListening(true); setVoiceError(''); setVoiceTranscript(''); setVoiceDetails(null) }
     recognition.onresult = (event) => {
       const transcript = event.results[0][0].transcript.trim()

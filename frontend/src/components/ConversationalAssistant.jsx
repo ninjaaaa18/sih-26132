@@ -1,7 +1,9 @@
+import { LANGS } from '../translations'
 import { useConversationalAssistant } from '../hooks/useConversationalAssistant'
 
 export default function ConversationalAssistant({ crops, locations, language, t, onCreated, onSeeRecommendation }) {
   const assistant = useConversationalAssistant({ crops, locations, language, t, onCreateLot: onCreated, onSeeRecommendation })
+  const languageLabel = LANGS.find((lang) => lang.code === language)?.label || language
 
   if (!assistant.open) {
     return (
@@ -28,7 +30,7 @@ export default function ConversationalAssistant({ crops, locations, language, t,
         {assistant.messages.map((message, index) => (
           <div key={index} className={`ai-bubble ai-bubble-${message.role}`}>{message.text}</div>
         ))}
-        {assistant.listening && <div className="ai-listening" role="status"><span className="recording-dot" /> {t('ai.listening')}</div>}
+        {assistant.listening && <div className="ai-listening" role="status"><span className="recording-dot" /> {t('ai.listening')} — {languageLabel}</div>}
         {assistant.phase === 'creating' && <div className="ai-status" role="status"><span className="loading-mark" /> {t('ai.processing')}</div>}
         {assistant.error && <div className="alert alert-error" role="alert">{assistant.error}</div>}
       </div>

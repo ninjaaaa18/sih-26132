@@ -1,13 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { DEMO_FARMER_ID, apiFetch } from '../api'
-import { VOICE_LANGS } from '../translations'
-import { parseVoiceTranscript } from '../voiceParsing'
+import { matchYesNo, parseVoiceTranscript, speechLocale } from '../voiceParsing'
 
 const FIELD_ORDER = ['crop_id', 'quantity', 'unit', 'location_id', 'harvest_date']
 const EMPTY_SLOTS = { crop_id: '', quantity: '', unit: '', harvest_date: '', location_id: '' }
-
-const ENGLISH_YES = ['yes', 'yeah', 'yep', 'yup', 'sure', 'ok', 'okay']
-const ENGLISH_NO = ['no', 'nope', 'cancel', 'not', 'stop']
 
 export function useConversationalAssistant({ crops, locations, language, t, onCreateLot, onSeeRecommendation }) {
   const [open, setOpen] = useState(false)
@@ -94,7 +90,7 @@ export function useConversationalAssistant({ crops, locations, language, t, onCr
       return
     }
 
-    const parsed = parseVoiceTranscript(text, dataRef.current.crops, dataRef.current.locations)
+    const parsed = parseVoiceTranscript(text, dataRef.current.crops, dataRef.current.locations, dataRef.current.language)
     const next = { ...slots }
     for (const field of FIELD_ORDER) {
       if (parsed.values[field]) next[field] = parsed.values[field]
@@ -110,20 +106,13 @@ export function useConversationalAssistant({ crops, locations, language, t, onCr
     pushMessage('assistant', askFor(missing[0]))
   }
 
-  function hasWord(text, words) {
-    const escaped = words.map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
-    return new RegExp(`\\b(${escaped.join('|')})\\b`).test(text)
-  }
-
   function handleConfirmation(text) {
-    const normalized = text.toLowerCase().trim()
-    const yesList = [...ENGLISH_YES, String(tr('ai.yes') || '').toLowerCase()].filter(Boolean)
-    const noList = [...ENGLISH_NO, String(tr('ai.no') || '').toLowerCase()].filter(Boolean)
-    if (hasWord(normalized, yesList)) {
+    const verdict = matchYesNo(text.toLowerCase().trim(), dataRef.current.language)
+    if (verdict === 'yes') {
       confirmCreate()
       return
     }
-    if (hasWord(normalized, noList)) {
+    if (verdict === 'no') {
       setPhase('speaking')
       setMessages([...messages, { role: 'assistant', text: tr('ai.restart') }])
       pushMessage('assistant', askFor('crop_id'))
@@ -200,15 +189,24 @@ export function useConversationalAssistant({ crops, locations, language, t, onCr
 
   function handleRecognitionError(event) {
     setListening(false)
-    if (event.error === 'not-allowed') {
+    const code = event.error
+    if (code === 'not-allowed' || code === 'service-not-allowed') {
       setError(tr('ai.permission'))
       pushMessage('assistant', tr('ai.permission'))
-    } else if (event.error === 'no-speech' || event.error === 'aborted' || event.error === 'network') {
+    } else if (code === 'language-not-supported') {
+      setError(tr('ai.unsupported.lang'))
+      pushMessage('assistant', tr('ai.unsupported.lang'))
+    } else if (code === 'network') {
+      setError(tr('ai.recognition.error'))
+      pushMessage('assistant', tr('ai.recognition.error'))
+    } else if (code === 'no-speech') {
       setError(tr('ai.empty'))
       pushMessage('assistant', tr('ai.empty'))
+    } else if (code === 'aborted') {
+      setError('')
     } else {
-      setError(tr('ai.error'))
-      pushMessage('assistant', tr('ai.error'))
+      setError(tr('ai.recognition.error'))
+      pushMessage('assistant', tr('ai.recognition.error'))
     }
   }
 
@@ -223,11 +221,17 @@ export function useConversationalAssistant({ crops, locations, language, t, onCr
       pushMessage('assistant', tr('ai.unsupported'))
       return
     }
+    const locale = speechLocale(dataRef.current.language)
+    if (!locale) {
+      setError(tr('ai.unsupported.lang'))
+      pushMessage('assistant', tr('ai.unsupported.lang'))
+      return
+    }
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
     const recognition = new SpeechRecognition()
     recognition.continuous = false
     recognition.interimResults = false
-    recognition.lang = VOICE_LANGS[dataRef.current.language] || 'en-IN'
+    recognition.lang = locale
     recognition.onstart = () => { setListening(true); setError('') }
     recognition.onresult = (event) => {
       const result = event.results[0][0].transcript.trim()

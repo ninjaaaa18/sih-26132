@@ -222,6 +222,8 @@ const STRINGS = {
     'ai.input.placeholder': 'Type your answer here…',
     'ai.send': 'Send',
     'ai.recommendation': 'See Market Recommendation',
+    'ai.unsupported.lang': 'Voice recognition for this language is not available in this browser. Please type your answer below.',
+    'ai.recognition.error': 'Voice recognition failed. Please try again or type your answer.',
   },
   kn: {
     'demo.farmer': 'ಪ್ರದರ್ಶನ ರೈತ',
@@ -435,6 +437,8 @@ const STRINGS = {
     'ai.input.placeholder': 'ನಿಮ್ಮ ಉತ್ತರವನ್ನು ಇಲ್ಲಿ ಟೈಪ್ ಮಾಡಿ…',
     'ai.send': 'ಕಳುಹಿಸಿ',
     'ai.recommendation': 'ಮಾರುಕಟ್ಟೆ ಶಿಫಾರಸು ನೋಡಿ',
+    'ai.unsupported.lang': 'ಈ ಭಾಷೆಗೆ ಈ ಬ್ರೌಸರ್‌ನಲ್ಲಿ ಧ್ವನಿ ಗುರುತಿಸುವಿಕೆ ಲಭ್ಯವಿಲ್ಲ. ದಯವಿಟ್ಟು ಕೆಳಗೆ ನಿಮ್ಮ ಉತ್ತರವನ್ನು ಟೈಪ್ ಮಾಡಿ.',
+    'ai.recognition.error': 'ಧ್ವನಿ ಗುರುತಿಸುವಿಕೆ ವಿಫಲವಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ ಅಥವಾ ನಿಮ್ಮ ಉತ್ತರವನ್ನು ಟೈಪ್ ಮಾಡಿ.',
   },
   mr: {
     'demo.farmer': 'डेमो शेतकरी',
@@ -648,6 +652,8 @@ const STRINGS = {
     'ai.input.placeholder': 'तुमचे उत्तर येथे टाइप करा…',
     'ai.send': 'पाठवा',
     'ai.recommendation': 'बाजार शिफारस पहा',
+    'ai.unsupported.lang': 'या भाषेसाठी या ब्राउझरमध्ये व्हॉइस ओळख उपलब्ध नाही. कृपया खाली तुमचे उत्तर टाइप करा.',
+    'ai.recognition.error': 'व्हॉइस ओळख अयशस्वी. कृपया पुन्हा प्रयत्न करा किंवा तुमचे उत्तर टाइप करा.',
   },
   hi: {
     'demo.farmer': 'डेमो किसान',
@@ -861,6 +867,8 @@ const STRINGS = {
     'ai.input.placeholder': 'अपना उत्तर यहां टाइप करें…',
     'ai.send': 'भेजें',
     'ai.recommendation': 'बाजार अनुशंसा देखें',
+    'ai.unsupported.lang': 'इस भाषा के लिए इस ब्राउज़र में वॉइस पहचान उपलब्ध नहीं है। कृपया नीचे अपना उत्तर टाइप करें.',
+    'ai.recognition.error': 'वॉइस पहचान विफल रही। कृपया पुनः प्रयास करें या अपना उत्तर टाइप करें.',
   },
   ta: {
     'demo.farmer': 'டெமோ விவசாயி',
@@ -1074,6 +1082,8 @@ const STRINGS = {
     'ai.input.placeholder': 'உங்கள் பதிலை இங்கே தட்டச்சு செய்யுங்கள்…',
     'ai.send': 'அனுப்பு',
     'ai.recommendation': 'சந்தை பரிந்துரையைப் பார்க்கவும்',
+    'ai.unsupported.lang': 'இந்த மொழிக்கு இந்த உலாவியில் குரல் அங்கீகாரம் கிடைக்கவில்லை. தயவுசெய்து கீழே உங்கள் பதிலைத் தட்டச்சு செய்யுங்கள்.',
+    'ai.recognition.error': 'குரல் அங்கீகாரம் தோல்வியடைந்தது. தயவுசெய்து மீண்டும் முயற்சிக்கவும் அல்லது உங்கள் பதிலைத் தட்டச்சு செய்யுங்கள்.',
   },
   te: {
     'demo.farmer': 'డెమో రైతు',
@@ -1287,6 +1297,8 @@ const STRINGS = {
     'ai.input.placeholder': 'మీ సమాధానాన్ని ఇక్కడ టైప్ చేయండి…',
     'ai.send': 'పంపండి',
     'ai.recommendation': 'మార్కెట్ సిఫార్సు చూడండి',
+    'ai.unsupported.lang': 'ఈ భాషకు ఈ బ్రౌజర్లో వాయిస్ గుర్తింపు అందుబాటులో లేదు. దయచేసి క్రింద మీ సమాధానాన్ని టైప్ చేయండి.',
+    'ai.recognition.error': 'వాయిస్ గుర్తింపు విఫలమైంది. దయచేసి మళ్లీ ప్రయత్నించండి లేదా మీ సమాధానాన్ని టైప్ చేయండి.',
   },
 }
 
